@@ -120,3 +120,49 @@ GET /api/scores/filter/?subject_id=&class_id=&student_id=&term_id=
 → Retrieve scores with filtering options
 (Can be filtered by one or more of: subject, class, student, term)
 
+📘 Effective Domains
+GET /api/effective-domains/ — List all effective domain assessments
+POST /api/effective-domains/ — Create a new effective domain assessment
+GET /api/effective-domains/{id}/ — Retrieve an effective domain assessment
+PUT /api/effective-domains/{id}/ — Update an effective domain assessment
+DELETE /api/effective-domains/{id}/ — Delete an effective domain assessment
+GET /api/effective-domains/?student_id=&term_id= — Filter effective domains by student and term
+
+📘 Psychomotive Domains
+GET /api/psychomotive-domains/ — List all psychomotive domain assessments
+POST /api/psychomotive-domains/ — Create a new psychomotive domain assessment
+GET /api/psychomotive-domains/{id}/ — Retrieve a psychomotive domain assessment
+PUT /api/psychomotive-domains/{id}/ — Update a psychomotive domain assessment
+DELETE /api/psychomotive-domains/{id}/ — Delete a psychomotive domain assessment
+GET /api/psychomotive-domains/?student_id=&term_id= — Filter psychomotive domains by student and term
+
+📘 School Profile
+GET /api/school/ — Get school details
+POST /api/school/ — Create school profile (one-time only)
+PUT /api/school/{id}/ — Update school profile
+DELETE /api/school/{id}/ — Delete school profile
+
+📘 Comments Templates
+GET /api/comments-templates/ — List all comment templates
+POST /api/comments-templates/ — Create a new comment template
+GET /api/comments-templates/{id}/ — Retrieve a comment template
+PUT /api/comments-templates/{id}/ — Update a comment template
+DELETE /api/comments-templates/{id}/ — Delete a comment template
+GET /api/comments-templates/?grade=&comment_type= — Filter templates by grade and type
+
+📘 Result Summaries
+GET /api/result-summaries/ — List all result summaries
+GET /api/result-summaries/{id}/ — Retrieve a specific result summary
+GET /api/result-summaries/?student=&term=&session= — Filter summaries by student, term, and session
+
+📘 Additional Student Endpoints
+GET /api/students/{student_id}/class/ — Get student's current class information
+GET /api/students/{student_id}/details/ — Get detailed student information
+GET /api/students/{student_id}/result-history/ — Get student's result history
+
+📘 Class Rankings
+GET /api/classes/{class_id}/terms/{term_id}/rankings/ — Get class rankings for a specific term
+
+📘 Bulk Operations
+POST /api/bulk-create/subjects/ — Bulk create multiple subjects
+
