@@ -1,0 +1,18 @@
+src/
+├── components/
+│   ├── Sidebar.tsx
+│   ├── Topbar.tsx
+│   └── Loader.tsx
+├── pages/
+│   ├── Dashboard.tsx
+│   ├── Sessions.tsx
+│   ├── Terms.tsx
+│   ├── Classes.tsx
+│   ├── Subjects.tsx
+│   ├── Students.tsx
+│   ├── Enrollments.tsx
+│   └── InputScores.tsx
+├── App.tsx
+├── main.tsx
+└── api/
+    └── index.ts (axios instance)

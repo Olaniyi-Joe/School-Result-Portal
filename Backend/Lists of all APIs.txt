@@ -1,0 +1,122 @@
+Method	Endpoint	Description
+GET	/api/sessions/	List all academic sessions
+POST	/api/sessions/	Create a new session
+GET	/api/sessions/{id}/	Retrieve a single session
+PUT	/api/sessions/{id}/	Update a session
+DELETE	/api/sessions/{id}/	Delete a session
+GET	/api/terms/	List all terms
+POST	/api/terms/	Create a new term
+GET	/api/terms/{id}/	Retrieve a single term
+PUT	/api/terms/{id}/	Update a term
+DELETE	/api/terms/{id}/	Delete a term
+GET	/api/sessions/{session_id}/terms/	Get all terms under a selected session
+
+GET	/api/classes/	List all classes
+POST	/api/classes/	Create a class
+GET	/api/classes/{id}/	Retrieve a class
+PUT	/api/classes/{id}/	Update a class
+DELETE	/api/classes/{id}/	Delete a class
+GET	/api/subjects/	List all subjects
+POST	/api/subjects/	Create a subject
+GET	/api/subjects/{id}/	Retrieve a subject
+PUT	/api/subjects/{id}/	Update a subject
+DELETE	/api/subjects/{id}/	Delete a subject
+
+All the APIs:
+🔁 Router-Based ViewSets
+📘 Sessions
+GET /api/sessions/ — List all sessions
+
+POST /api/sessions/ — Create a new session
+
+GET /api/sessions/{id}/ — Retrieve a session
+
+PUT /api/sessions/{id}/ — Update a session
+
+DELETE /api/sessions/{id}/ — Delete a session
+
+📘 Terms
+GET /api/terms/ — List all terms
+
+POST /api/terms/ — Create a new term
+
+GET /api/terms/{id}/ — Retrieve a term
+
+PUT /api/terms/{id}/ — Update a term
+
+DELETE /api/terms/{id}/ — Delete a term
+
+📘 Classes
+GET /api/classes/ — List all classes
+
+POST /api/classes/ — Create a new class
+
+GET /api/classes/{id}/ — Retrieve a class
+
+PUT /api/classes/{id}/ — Update a class
+
+DELETE /api/classes/{id}/ — Delete a class
+
+📘 Subjects
+GET /api/subjects/ — List all subjects
+
+POST /api/subjects/ — Create a new subject
+
+GET /api/subjects/{id}/ — Retrieve a subject
+
+PUT /api/subjects/{id}/ — Update a subject
+
+DELETE /api/subjects/{id}/ — Delete a subject
+
+📘 Students
+GET /api/students/ — List all students
+
+POST /api/students/ — Create a new student
+
+GET /api/students/{id}/ — Retrieve a student
+
+PUT /api/students/{id}/ — Update a student
+
+DELETE /api/students/{id}/ — Delete a student
+
+📘 Enrollments
+GET /api/enrollments/ — List all enrollments
+
+POST /api/enrollments/ — Enroll a new student (single enrollment)
+
+GET /api/enrollments/{id}/ — Retrieve an enrollment
+
+PUT /api/enrollments/{id}/ — Update an enrollment
+
+DELETE /api/enrollments/{id}/ — Delete an enrollment
+
+🧩 Custom Endpoints
+📘 Term → Session Relationship
+GET /api/sessions/{session_id}/terms/
+→ Get all terms under a specific session
+
+📘 Subject → Class Relationship
+GET /api/classes/{class_id}/subjects/
+→ Get all subjects for a specific class
+
+📘 Bulk Enrollment
+POST /api/bulk/enrollments/
+→ Bulk enroll multiple students at once
+
+📘 Students in a Subject in a Class
+GET /api/stu/class/{class_id}/subjects/{subject_id}/students/
+→ Get all students in a class offering a specific subject
+
+📘 Scores Input
+POST /api/scores/input/subject/{subject_id}/class/{class_id}/term/{term_id}/
+→ Input scores for multiple students for a specific subject, class, and term
+
+📘 Student-Specific Scores
+GET /api/scores/student/{student_id}/
+→ Retrieve all scores for a particular student
+
+📘 Filter Scores (Flexible)
+GET /api/scores/filter/?subject_id=&class_id=&student_id=&term_id=
+→ Retrieve scores with filtering options
+(Can be filtered by one or more of: subject, class, student, term)
+
