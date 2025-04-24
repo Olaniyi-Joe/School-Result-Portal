@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios'; // Remove default axios import
+import axiosInstance from '../api/axiosInstance'; // Import the configured instance
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,11 +24,11 @@ export default function AdminSignupPage() {
     }
 
     try {
-      const token = localStorage.getItem('token'); // Need auth token for this endpoint
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/auth/register/', 
-        { username, email, password, user_type: userType }, // Adjust payload based on backend expectations
-        { headers: { Authorization: `Bearer ${token}` } } 
+      // Use axiosInstance and relative path (or full path if baseURL isn't set reliably)
+      // Headers are now handled by the interceptor
+      const response = await axiosInstance.post(
+        '/auth/register/', 
+        { username, email, password, user_type: userType } // Adjust payload based on backend expectations
       );
       toast.success('User registered successfully!');
       // Optionally navigate somewhere or clear form
