@@ -130,16 +130,27 @@ export default function EnterScores() {
 
   const handleScoreChange = (index, field, value) => {
     // Create a copy of student scores array
-    const updatedScores = [...studentScores]
+    // Create a copy of student scores array
+    const updatedScores = [...studentScores];
     
     // Validate and parse the input value
-    let score = parseInt(value, 10) || 0
+    let score = parseInt(value, 10);
     
-    // Ensure score is between 0 and 100
-    score = Math.max(0, Math.min(100, score))
+    // Handle NaN case (e.g., empty input) - treat as 0 for calculation, but maybe allow empty input visually?
+    // For simplicity here, we'll default NaN to 0.
+    if (isNaN(score)) {
+        score = 0; 
+    }
+
+    // Define maximums based on the field
+    const maxScore = field === 'ca_score' ? 30 : field === 'exam_score' ? 70 : 100; // Default 100 if field unknown
+
+    // Ensure score is within the valid range [0, maxScore]
+    score = Math.max(0, Math.min(maxScore, score));
     
     // Update the specific field with the validated value
-    updatedScores[index][field] = score
+    // Store as number
+    updatedScores[index][field] = score; 
     
     // Update state
     setStudentScores(updatedScores)
@@ -275,7 +286,8 @@ export default function EnterScores() {
                       />
                     </td>
                     <td className="py-2 px-4 border text-center">
-                      {(parseFloat(student.ca_score || 0) + parseFloat(student.exam_score || 0)).toFixed(1)}
+                      {/* Ensure values are treated as numbers */}
+                      {(Number(student.ca_score || 0) + Number(student.exam_score || 0)).toFixed(1)}
                     </td>
                     <td className="py-2 px-4 border text-center">
                       {student.has_existing_score ? 

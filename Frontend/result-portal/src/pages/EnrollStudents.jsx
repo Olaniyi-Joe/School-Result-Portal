@@ -1,8 +1,8 @@
 // src/pages/EnrollStudents.jsx
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useEffect, useState } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function EnrollStudents() {
   const [activeTab, setActiveTab] = useState('individual')
@@ -43,12 +43,13 @@ export default function EnrollStudents() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Use axiosInstance and relative paths
         const [classRes, termRes, sessionRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/classes/'),
-          axios.get('http://127.0.0.1:8000/api/terms/'),
-          axios.get('http://127.0.0.1:8000/api/sessions/')
-        ])
-        setClasses(classRes.data)
+          axiosInstance.get('/classes/'),
+          axiosInstance.get('/terms/'),
+          axiosInstance.get('/sessions/')
+        ]);
+        setClasses(classRes.data);
         setTerms(termRes.data)
         setSessions(sessionRes.data)
       } catch (error) {
@@ -62,8 +63,8 @@ export default function EnrollStudents() {
   // Fetch enrolled students
   const fetchEnrolledStudents = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/enrollments/')
-      setEnrolledStudents(res.data)
+      const res = await axiosInstance.get('/enrollments/'); // Use axiosInstance and relative path
+      setEnrolledStudents(res.data);
     } catch (err) {
       toast.error('Failed to fetch enrolled students')
       console.error('Error fetching enrolled students:', err)
@@ -86,11 +87,12 @@ export default function EnrollStudents() {
     if (picture) formData.append('picture', picture)
 
     try {
-      setLoading(true)
-      await axios.post('http://127.0.0.1:8000/api/enrollments/', formData, {
+      setLoading(true);
+      // Use axiosInstance and relative path, interceptor handles token, but keep Content-Type for FormData
+      await axiosInstance.post('/enrollments/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      toast.success('Student enrolled successfully!')
+      });
+      toast.success('Student enrolled successfully!');
       setFirstName('')
       setLastName('')
       setEmail('')
@@ -201,9 +203,10 @@ export default function EnrollStudents() {
         if (entry.picture) {
           formData.append(`students[${index}][picture]`, entry.picture)
         }
-      })
+      });
   
-      await axios.post('http://127.0.0.1:8000/api/bulk/enrollments/', formData, {
+      // Use axiosInstance and relative path, keep Content-Type for FormData
+      await axiosInstance.post('/bulk/enrollments/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -249,12 +252,13 @@ export default function EnrollStudents() {
         } else if (key !== 'picture') {
           formData.append(key, editFormData[key])
         }
-      })
+      });
 
-      await axios.put(`http://127.0.0.1:8000/api/enrollments/${editingStudent.id}/`, formData, {
+      // Use axiosInstance and relative path, keep Content-Type for FormData
+      await axiosInstance.put(`/enrollments/${editingStudent.id}/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      toast.success('Student updated successfully!')
+      });
+      toast.success('Student updated successfully!');
       setEditModalOpen(false)
       fetchEnrolledStudents()
     } catch (err) {
@@ -265,11 +269,12 @@ export default function EnrollStudents() {
 
   // Handle delete student
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this enrollment?')) return
+    if (!window.confirm('Are you sure you want to delete this enrollment?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/enrollments/${id}/`)
-      toast.success('Enrollment deleted successfully!')
-      fetchEnrolledStudents()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/enrollments/${id}/`);
+      toast.success('Enrollment deleted successfully!');
+      fetchEnrolledStudents();
     } catch (err) {
       toast.error('Failed to delete enrollment')
       console.error('Error deleting enrollment:', err)

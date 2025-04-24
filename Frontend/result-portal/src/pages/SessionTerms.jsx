@@ -1,8 +1,8 @@
 // src/pages/TermsBySession.jsx
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useParams } from 'react-router-dom'
-import { toast, ToastContainer } from 'react-toastify'
+import { useEffect, useState } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { useParams } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
 import Modal from '../components/Modal'
 
 export default function SessionTerms() {
@@ -14,8 +14,8 @@ export default function SessionTerms() {
 
   const fetchTerms = async () => {
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/api/sessions/${sessionId}/terms/`)
-      setTerms(res.data)
+      const res = await axiosInstance.get(`/sessions/${sessionId}/terms/`); // Use axiosInstance and relative path
+      setTerms(res.data);
     } catch (err) {
       toast.error('Failed to fetch terms')
       console.log('Error fetching terms:', err)
@@ -34,9 +34,10 @@ export default function SessionTerms() {
 
   const handleEditSubmit = async () => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/terms/${selectedTerm.id}/`, { name: editName, session: sessionId })
-      toast.success('Term updated!')
-      setEditModalOpen(false)
+      // Use axiosInstance and relative path
+      await axiosInstance.put(`/terms/${selectedTerm.id}/`, { name: editName, session: sessionId });
+      toast.success('Term updated!');
+      setEditModalOpen(false);
       fetchTerms()
     } catch (err){
       toast.error('Failed to update term')
@@ -45,11 +46,12 @@ export default function SessionTerms() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this term?')) return
+    if (!window.confirm('Are you sure you want to delete this term?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/terms/${id}/`)
-      toast.success('Term deleted!')
-      fetchTerms()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/terms/${id}/`);
+      toast.success('Term deleted!');
+      fetchTerms();
     } catch (err){
       toast.error('Failed to delete term')
       console.log('Error deleting term:', err)

@@ -1,8 +1,8 @@
 // src/pages/Classes.jsx
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useEffect, useState } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
 
 export default function Classes() {
@@ -21,8 +21,8 @@ export default function Classes() {
   // Fetch classes
   const fetchClasses = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/classes/')
-      setClasses(res.data)
+      const res = await axiosInstance.get('/classes/'); // Use axiosInstance and relative path
+      setClasses(res.data);
     } catch (err) {
       toast.error('Failed to fetch classes')
       console.error(err)
@@ -32,8 +32,8 @@ export default function Classes() {
   // Fetch terms
   const fetchTerms = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/terms/')
-      setTerms(res.data)
+      const res = await axiosInstance.get('/terms/'); // Use axiosInstance and relative path
+      setTerms(res.data);
     } catch (err) {
       toast.error('Failed to fetch terms')
       console.error(err)
@@ -48,9 +48,10 @@ export default function Classes() {
   // Create new class
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/classes/', {
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/classes/', {
         name,
         term: termId,
       })
@@ -77,7 +78,8 @@ export default function Classes() {
   // Update class
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/classes/${editingClass.id}/`, {
+      // Use axiosInstance and relative path
+      await axiosInstance.put(`/classes/${editingClass.id}/`, {
         name: editingName,
         term: editingTermId,
       })
@@ -92,11 +94,12 @@ export default function Classes() {
 
   // Delete class
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this class?')) return
+    if (!window.confirm('Are you sure you want to delete this class?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/classes/${id}/`)
-      toast.success('Class deleted successfully')
-      fetchClasses()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/classes/${id}/`);
+      toast.success('Class deleted successfully');
+      fetchClasses();
     } catch (err) {
       toast.error('Failed to delete class')
       console.error(err)

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const RATING_OPTIONS = ['A', 'B', 'C', 'D', 'E']
 
@@ -42,11 +42,12 @@ export default function StudentDomains() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Use axiosInstance and relative paths
         const [studentsRes, termsRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/students/'),
-          axios.get('http://127.0.0.1:8000/api/terms/')
-        ])
-        setStudents(studentsRes.data)
+          axiosInstance.get('/students/'),
+          axiosInstance.get('/terms/')
+        ]);
+        setStudents(studentsRes.data);
         setTerms(termsRes.data)
       } catch (error) {
         toast.error('Failed to fetch data')
@@ -70,16 +71,17 @@ export default function StudentDomains() {
       return
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
+      // Use axiosInstance and relative paths
       const [effectiveRes, psychomotorRes] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/api/effective-domains/', {
+        axiosInstance.get('/effective-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
           }
         }),
-        axios.get('http://127.0.0.1:8000/api/psychomotive-domains/', {
+        axiosInstance.get('/psychomotive-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
@@ -130,11 +132,12 @@ export default function StudentDomains() {
     }
 
     try {
-      const id = domain === 'effective' ? effectiveDomain.id : psychomotorDomain.id
-      const endpoint = domain === 'effective' ? 'effective-domains' : 'psychomotive-domains'
+      const id = domain === 'effective' ? effectiveDomain.id : psychomotorDomain.id;
+      const endpoint = domain === 'effective' ? 'effective-domains' : 'psychomotive-domains';
       
-      await axios.delete(`http://127.0.0.1:8000/api/${endpoint}/${id}/`)
-      toast.success(`${domain} domain assessment deleted successfully`)
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/${endpoint}/${id}/`);
+      toast.success(`${domain} domain assessment deleted successfully`);
       
       // Reset the state for the deleted domain
       if (domain === 'effective') {
@@ -171,19 +174,20 @@ export default function StudentDomains() {
       }
 
       // Submit both domains in parallel
+      // Use axiosInstance and relative paths
       await Promise.all([
         // Submit effective domain
         effectiveDomain.id
-          ? axios.put(`http://127.0.0.1:8000/api/effective-domains/${effectiveDomain.id}/`, effectivePayload)
-          : axios.post('http://127.0.0.1:8000/api/effective-domains/', effectivePayload),
+          ? axiosInstance.put(`/effective-domains/${effectiveDomain.id}/`, effectivePayload)
+          : axiosInstance.post('/effective-domains/', effectivePayload),
         
         // Submit psychomotor domain
         psychomotorDomain.id
-          ? axios.put(`http://127.0.0.1:8000/api/psychomotive-domains/${psychomotorDomain.id}/`, psychomotorPayload)
-          : axios.post('http://127.0.0.1:8000/api/psychomotive-domains/', psychomotorPayload)
-      ])
+          ? axiosInstance.put(`/psychomotive-domains/${psychomotorDomain.id}/`, psychomotorPayload)
+          : axiosInstance.post('/psychomotive-domains/', psychomotorPayload)
+      ]);
 
-      toast.success('Assessments saved successfully')
+      toast.success('Assessments saved successfully');
       // Refresh data to get the updated records
       fetchExistingData()
     } catch (error) {

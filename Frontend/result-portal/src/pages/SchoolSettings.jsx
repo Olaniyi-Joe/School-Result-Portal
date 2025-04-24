@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function SchoolSettings() {
   const [schoolData, setSchoolData] = useState({
@@ -30,8 +30,8 @@ export default function SchoolSettings() {
 
   const fetchSchoolDetails = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/school/')
-      setSchoolData(response.data)
+      const response = await axiosInstance.get('/school/'); // Use axiosInstance and relative path
+      setSchoolData(response.data);
       // Set preview URLs for existing images
       setPreviewUrls({
         logo: response.data.logo,
@@ -80,16 +80,17 @@ export default function SchoolSettings() {
         if (schoolData[key] !== null) {
           formData.append(key, schoolData[key])
         }
-      })
+      });
 
+      // Use axiosInstance and relative paths, keep Content-Type for FormData
       if (schoolData.id) {
-        await axios.put(`http://127.0.0.1:8000/api/school/${schoolData.id}/`, formData, {
+        await axiosInstance.put(`/school/${schoolData.id}/`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
-        })
+        });
       } else {
-        await axios.post('http://127.0.0.1:8000/api/school/', formData, {
+        await axiosInstance.post('/school/', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

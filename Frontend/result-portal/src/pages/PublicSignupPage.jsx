@@ -29,15 +29,17 @@ export default function PublicSignupPage() {
 
     // --- IMPORTANT ---
     // This requires a NEW backend endpoint that allows public registration.
-    // The URL '/api/auth/public-register/' is a placeholder.
+    // The URL '/auth/public-register/' is a placeholder relative path.
     // Replace it with the actual endpoint when it's created.
-    const publicRegisterUrl = 'http://127.0.0.1:8000/api/auth/public-register/'; 
+    const publicRegisterPath = '/auth/public-register/';
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${publicRegisterPath}`;
     // --- /IMPORTANT ---
 
     try {
-      const response = await axios.post(publicRegisterUrl, { 
-        username, 
-        email, 
+      // Use default axios for public endpoint, construct full URL
+      const response = await axios.post(apiUrl, {
+        username,
+        email,
         password 
       });
       toast.success('Signup successful! Please log in.');

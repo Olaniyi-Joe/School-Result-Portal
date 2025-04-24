@@ -31,20 +31,29 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Remove isAuthenticated state and useEffect
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   setIsAuthenticated(!!token);
+  // }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
+  // Helper to check token for public routes
+  const isAlreadyLoggedIn = () => !!localStorage.getItem('token');
 
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
-          <Route path="/signup" element={!isAuthenticated ? <PublicSignupPage /> : <Navigate to="/" />} /> 
+          {/* Public Routes: Redirect if already logged in */}
+          <Route 
+            path="/login" 
+            element={isAlreadyLoggedIn() ? <Navigate to="/" /> : <Login />} 
+          />
+          <Route 
+            path="/signup" 
+            element={isAlreadyLoggedIn() ? <Navigate to="/" /> : <PublicSignupPage />} 
+          /> 
           
           {/* Protected Routes */}
           <Route path="/*" element={

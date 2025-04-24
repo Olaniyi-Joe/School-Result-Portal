@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useEffect, useState } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
 
 export default function Subjects() {
@@ -21,8 +21,8 @@ export default function Subjects() {
 
   const fetchSubjects = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/subjects/')
-      setSubjects(res.data)
+      const res = await axiosInstance.get('/subjects/'); // Use axiosInstance and relative path
+      setSubjects(res.data);
     } catch (err) {
       toast.error('Failed to fetch subjects')
       console.error(err)
@@ -31,8 +31,8 @@ export default function Subjects() {
 
   const fetchClasses = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/classes/')
-      setClasses(res.data)
+      const res = await axiosInstance.get('/classes/'); // Use axiosInstance and relative path
+      setClasses(res.data);
     } catch (err) {
       toast.error('Failed to fetch classes')
       console.error(err)
@@ -46,9 +46,10 @@ export default function Subjects() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/subjects/', {
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/subjects/', {
         name,
         class_group: classId,
       })
@@ -84,9 +85,10 @@ export default function Subjects() {
       return
     }
 
-    setBulkLoading(true)
+    setBulkLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/bulk-create/subjects/', {
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/bulk-create/subjects/', {
         subjects: names,
         class_group_id: classId,
       })
@@ -114,7 +116,8 @@ export default function Subjects() {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/subjects/${editingSubject.id}/`, {
+      // Use axiosInstance and relative path
+      await axiosInstance.put(`/subjects/${editingSubject.id}/`, {
         name: editingName,
         class_group: editingClassId,
       })
@@ -128,11 +131,12 @@ export default function Subjects() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this subject?')) return
+    if (!window.confirm('Are you sure you want to delete this subject?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/subjects/${id}/`)
-      toast.success('Subject deleted successfully!')
-      fetchSubjects()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/subjects/${id}/`);
+      toast.success('Subject deleted successfully!');
+      fetchSubjects();
     } catch (err) {
       toast.error('Failed to delete subject')
       console.error(err)

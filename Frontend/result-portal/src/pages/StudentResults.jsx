@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const StudentResults = () => {
   const [students, setStudents] = useState([])
@@ -31,17 +31,18 @@ const StudentResults = () => {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Use axiosInstance and relative paths
         const [studentsRes, sessionsRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/students/'),
-          axios.get('http://127.0.0.1:8000/api/sessions/')
-        ])
-        setStudents(studentsRes.data)
-        setSessions(sessionsRes.data)
+          axiosInstance.get('/students/'),
+          axiosInstance.get('/sessions/')
+        ]);
+        setStudents(studentsRes.data);
+        setSessions(sessionsRes.data);
 
         // Fetch school details
-        const schoolRes = await axios.get('http://127.0.0.1:8000/api/school/')
+        const schoolRes = await axiosInstance.get('/school/'); // Use axiosInstance
         if (schoolRes.data) {
-          setSchoolInfo(schoolRes.data)
+          setSchoolInfo(schoolRes.data);
         }
       } catch (error) {
         toast.error('Failed to fetch data')
@@ -61,8 +62,9 @@ const StudentResults = () => {
       }
 
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/sessions/${selectedSession}/terms/`)
-        setTerms(res.data)
+        // Use axiosInstance and relative path
+        const res = await axiosInstance.get(`/sessions/${selectedSession}/terms/`);
+        setTerms(res.data);
         // Reset selected term when session changes
         setSelectedTerm('')
       } catch (error) {
@@ -91,23 +93,23 @@ const StudentResults = () => {
     setResultSummary(null)
     
     try {
-      // Get student details, class info, domain assessments, and result summary in parallel
+      // Use axiosInstance and relative paths
       const [studentRes, classRes, effectiveRes, psychomotorRes, summaryRes] = await Promise.all([
-        axios.get(`http://127.0.0.1:8000/api/students/${selectedStudent}/`),
-        axios.get(`http://127.0.0.1:8000/api/students/${selectedStudent}/class/`),
-        axios.get('http://127.0.0.1:8000/api/effective-domains/', {
+        axiosInstance.get(`/students/${selectedStudent}/`),
+        axiosInstance.get(`/students/${selectedStudent}/class/`),
+        axiosInstance.get('/effective-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
           }
         }),
-        axios.get('http://127.0.0.1:8000/api/psychomotive-domains/', {
+        axiosInstance.get('/psychomotive-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
           }
         }),
-        axios.get('http://127.0.0.1:8000/api/result-summaries/', {
+        axiosInstance.get('/result-summaries/', {
           params: {
             student: selectedStudent,
             term: selectedTerm
@@ -132,24 +134,27 @@ const StudentResults = () => {
       }
       
       // Get student scores
-      const scoresRes = await axios.get('http://127.0.0.1:8000/api/scores/filter/', {
+      // Use axiosInstance and relative path
+      const scoresRes = await axiosInstance.get('/scores/filter/', {
         params: {
           student_id: selectedStudent,
           term_id: selectedTerm
         }
       })
-      setResults(scoresRes.data)
+      setResults(scoresRes.data);
       
       // Get detailed term info including session
-      const termRes = await axios.get(`http://127.0.0.1:8000/api/terms/${selectedTerm}/`)
-      console.log('Term details:', termRes.data)
+      // Use axiosInstance and relative path
+      const termRes = await axiosInstance.get(`/terms/${selectedTerm}/`);
+      console.log('Term details:', termRes.data);
       
       // Set session info from the term details
       if (termRes.data.session_name) {
         setSessionInfo({ name: termRes.data.session_name });
       } else if (termRes.data.session) {
         try {
-          const sessionRes = await axios.get(`http://127.0.0.1:8000/api/sessions/${termRes.data.session}/`);
+          // Use axiosInstance and relative path
+          const sessionRes = await axiosInstance.get(`/sessions/${termRes.data.session}/`);
           setSessionInfo(sessionRes.data);
         } catch (error) {
           console.error('Error fetching session:', error);

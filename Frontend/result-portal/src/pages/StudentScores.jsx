@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function StudentScores() {
   const [classes, setClasses] = useState([])
@@ -18,11 +18,12 @@ export default function StudentScores() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Use axiosInstance and relative paths
         const [classRes, termRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/classes/'),
-          axios.get('http://127.0.0.1:8000/api/terms/')
-        ])
-        setClasses(classRes.data)
+          axiosInstance.get('/classes/'),
+          axiosInstance.get('/terms/')
+        ]);
+        setClasses(classRes.data);
         setTerms(termRes.data)
       } catch (error) {
         toast.error('Failed to fetch initial data')
@@ -37,8 +38,9 @@ export default function StudentScores() {
     if (selectedClass) {
       async function fetchSubjects() {
         try {
-          const res = await axios.get(`http://127.0.0.1:8000/api/classes/${selectedClass}/subjects/`)
-          setSubjects(res.data)
+          // Use axiosInstance and relative path
+          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`);
+          setSubjects(res.data);
         } catch (error) {
           toast.error('Failed to fetch subjects')
           console.error('Error:', error)
@@ -57,9 +59,10 @@ export default function StudentScores() {
       return
     }
     
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/scores/filter/', {
+      // Use axiosInstance and relative path
+      const response = await axiosInstance.get('/scores/filter/', {
         params: {
           class_id: selectedClass,
           subject_id: selectedSubject,

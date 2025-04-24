@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
 
 export default function CommentsManagement() {
@@ -26,8 +26,8 @@ export default function CommentsManagement() {
 
   const fetchComments = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/comments-templates/')
-      setComments(res.data)
+      const res = await axiosInstance.get('/comments-templates/'); // Use axiosInstance and relative path
+      setComments(res.data);
     } catch (err) {
       toast.error('Failed to fetch comments')
       console.error('Error fetching comments:', err)
@@ -40,9 +40,10 @@ export default function CommentsManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/comments-templates/', {
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/comments-templates/', {
         grade,
         comment_type: commentType,
         comment
@@ -69,7 +70,8 @@ export default function CommentsManagement() {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/comments-templates/${editingComment.id}/`, {
+      // Use axiosInstance and relative path
+      await axiosInstance.put(`/comments-templates/${editingComment.id}/`, {
         grade,
         comment_type: commentType,
         comment
@@ -84,11 +86,12 @@ export default function CommentsManagement() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this comment template?')) return
+    if (!window.confirm('Are you sure you want to delete this comment template?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/comments-templates/${id}/`)
-      toast.success('Comment template deleted successfully!')
-      fetchComments()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/comments-templates/${id}/`);
+      toast.success('Comment template deleted successfully!');
+      fetchComments();
     } catch (err) {
       toast.error('Failed to delete comment template')
       console.error('Error:', err)
