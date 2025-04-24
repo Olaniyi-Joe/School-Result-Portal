@@ -1,8 +1,9 @@
 // src/pages/Terms.jsx
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useEffect, useState } from 'react';
+// import axios from 'axios'; // Remove default axios
+import axiosInstance from '../api/axiosInstance'; // Import the configured instance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
 
 export default function Terms() {
@@ -19,8 +20,9 @@ export default function Terms() {
 
   const fetchTerms = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/terms/')
-      setTerms(res.data)
+      // Use axiosInstance and relative path
+      const res = await axiosInstance.get('/terms/');
+      setTerms(res.data);
     } catch (err) {
       toast.error('Failed to fetch terms')
       console.error(err)
@@ -29,8 +31,9 @@ export default function Terms() {
 
   const fetchSessions = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/sessions/')
-      setSessions(res.data)
+      // Use axiosInstance and relative path
+      const res = await axiosInstance.get('/sessions/');
+      setSessions(res.data);
     } catch (err) {
       toast.error('Failed to fetch sessions')
       console.error(err)
@@ -44,9 +47,10 @@ export default function Terms() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/terms/', {
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/terms/', {
         name,
         session: sessionId,
       })
@@ -71,7 +75,8 @@ export default function Terms() {
 
   const handleUpdate = async () => {
     try {
-      await axios.patch(`http://127.0.0.1:8000/api/terms/${editingTerm.id}/`, {
+      // Use axiosInstance and relative path
+      await axiosInstance.patch(`/terms/${editingTerm.id}/`, {
         name: editingName,
         session: editingSessionId,
       })
@@ -85,11 +90,12 @@ export default function Terms() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this term?')) return
+    if (!window.confirm('Are you sure you want to delete this term?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/terms/${id}/`)
-      toast.success('Term deleted successfully!')
-      fetchTerms()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/terms/${id}/`);
+      toast.success('Term deleted successfully!');
+      fetchTerms();
     } catch (err) {
       toast.error('Failed to delete term')
       console.error(err)

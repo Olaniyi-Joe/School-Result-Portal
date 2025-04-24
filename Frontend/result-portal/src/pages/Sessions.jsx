@@ -1,8 +1,9 @@
 // src/pages/Sessions.jsx
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import Modal from '../components/Modal'
-import { toast, ToastContainer } from 'react-toastify'
+import { useState, useEffect } from 'react';
+// import axios from 'axios'; // Remove default axios
+import axiosInstance from '../api/axiosInstance'; // Import the configured instance
+import Modal from '../components/Modal';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
 
@@ -18,8 +19,9 @@ export default function Sessions() {
 
   const fetchSessions = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/sessions/')
-      setSessions(Array.isArray(res.data) ? res.data : [])
+      // Use axiosInstance and relative path
+      const res = await axiosInstance.get('/sessions/');
+      setSessions(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       toast.error('Failed to fetch sessions')
       console.log('Error fetching sessions:', err)
@@ -32,11 +34,12 @@ export default function Sessions() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/sessions/', { name })
-      setName('')
-      toast.success('Session added!')
+      // Use axiosInstance and relative path
+      await axiosInstance.post('/sessions/', { name });
+      setName('');
+      toast.success('Session added!');
       fetchSessions()
     } catch (err) {
       toast.error('Failed to create session')
@@ -54,9 +57,10 @@ export default function Sessions() {
 
   const handleEditSubmit = async () => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/sessions/${selectedSession.id}/`, { name: editName })
-      toast.success('Session updated!')
-      setEditModalOpen(false)
+      // Use axiosInstance and relative path
+      await axiosInstance.put(`/sessions/${selectedSession.id}/`, { name: editName });
+      toast.success('Session updated!');
+      setEditModalOpen(false);
       fetchSessions()
     } catch (err){
       toast.error('Failed to update session')
@@ -65,11 +69,12 @@ export default function Sessions() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this session?')) return
+    if (!window.confirm('Are you sure you want to delete this session?')) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/sessions/${id}/`)
-      toast.success('Session deleted!')
-      fetchSessions()
+      // Use axiosInstance and relative path
+      await axiosInstance.delete(`/sessions/${id}/`);
+      toast.success('Session deleted!');
+      fetchSessions();
     } catch (err){
       toast.error('Failed to delete session')
       console.log('Error deleting session:', err)

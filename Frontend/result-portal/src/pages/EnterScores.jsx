@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { useState, useEffect } from 'react';
+// import axios from 'axios'; // Remove default axios
+import axiosInstance from '../api/axiosInstance'; // Import the configured instance
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function EnterScores() {
   const [classes, setClasses] = useState([])
@@ -20,10 +21,10 @@ export default function EnterScores() {
     async function fetchData() {
       try {
         const [classRes, termRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/classes/'),
-          axios.get('http://127.0.0.1:8000/api/terms/')
-        ])
-        setClasses(classRes.data)
+          axiosInstance.get('/classes/'), // Use axiosInstance and relative path
+          axiosInstance.get('/terms/')   // Use axiosInstance and relative path
+        ]);
+        setClasses(classRes.data);
         setTerms(termRes.data)
       } catch (error) {
         toast.error('Failed to fetch reference data')
@@ -38,8 +39,9 @@ export default function EnterScores() {
     if (selectedClass) {
       async function fetchSubjects() {
         try {
-          const res = await axios.get(`http://127.0.0.1:8000/api/classes/${selectedClass}/subjects/`)
-          setSubjects(res.data)
+          // Use axiosInstance and relative path
+          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`);
+          setSubjects(res.data);
         } catch (error) {
           toast.error('Failed to fetch subjects for this class')
           console.error('Error fetching subjects:', error)
@@ -65,15 +67,14 @@ export default function EnterScores() {
       return
     }
     
-    setLoading(true)
+    setLoading(true);
     try {
-      // First get all students enrolled in this class
-      const studentsResponse = await axios.get(
-        `http://127.0.0.1:8000/api/stu/class/${selectedClass}/subjects/${selectedSubject}/students/`
-      )
-      
-      // Then get any existing scores for this subject/class/term
-      const scoresResponse = await axios.get('http://127.0.0.1:8000/api/scores/filter/', {
+      // Use axiosInstance and relative paths
+      const studentsResponse = await axiosInstance.get(
+        `/stu/class/${selectedClass}/subjects/${selectedSubject}/students/`
+      );
+
+      const scoresResponse = await axiosInstance.get('/scores/filter/', {
         params: {
           class_id: selectedClass,
           subject_id: selectedSubject,
@@ -156,14 +157,14 @@ export default function EnterScores() {
       const formattedScores = studentScores.map(student => ({
         student_id: student.student_id,
         ca_score: student.ca_score,
-        exam_score: student.exam_score
-      }))
+        exam_score: student.exam_score,
+      }));
 
-      await axios.post(
-        `http://127.0.0.1:8000/api/scores/input/subject/${selectedSubject}/class/${selectedClass}/term/${selectedTerm}/`,
+      // Use axiosInstance and relative path
+      await axiosInstance.post(
+        `/scores/input/subject/${selectedSubject}/class/${selectedClass}/term/${selectedTerm}/`,
         { scores: formattedScores }
-      )
-      
+      );
       toast.success('Scores submitted successfully')
       
       // Mark all scores as existing scores after submission
