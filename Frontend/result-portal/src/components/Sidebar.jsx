@@ -15,7 +15,8 @@ export default function Sidebar() {
     { to: '/student-scores', label: 'View Scores', icon: 'chart-bar' },
     { to: '/student-results', label: 'Student Results', icon: 'file-alt' },
     { to: '/student-domains', label: 'Student Domains', icon: 'star' },
-    { to: '/comments', label: 'Comments', icon: 'comments' }
+    { to: '/comments', label: 'Comments', icon: 'comments' },
+    { to: '/admin-signup', label: 'Register User', icon: 'user-plus' } // Added Admin Signup Link
   ]
   
   const isActive = (path) => location.pathname === path

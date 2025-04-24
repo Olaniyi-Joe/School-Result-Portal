@@ -17,8 +17,10 @@ import EnterScores from './pages/EnterScores'
 import StudentScores from './pages/StudentScores'
 import StudentResults from './pages/StudentResults'
 import StudentDomains from './pages/StudentDomains'
-import SchoolSettings from './pages/SchoolSettings'
-import CommentsManagement from './pages/CommentsManagement'
+import SchoolSettings from './pages/SchoolSettings';
+import CommentsManagement from './pages/CommentsManagement';
+import AdminSignupPage from './pages/AdminSignupPage'; // Import Admin Signup
+import PublicSignupPage from './pages/PublicSignupPage'; // Import Public Signup
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -40,8 +42,11 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+          <Route path="/signup" element={!isAuthenticated ? <PublicSignupPage /> : <Navigate to="/" />} /> 
           
+          {/* Protected Routes */}
           <Route path="/*" element={
             <ProtectedRoute>
               <div className="flex min-h-screen">
@@ -63,6 +68,7 @@ export default function App() {
                       <Route path="/student-domains" element={<StudentDomains />} />
                       <Route path="/school-settings" element={<SchoolSettings />} />
                       <Route path="/comments" element={<CommentsManagement />} />
+                      <Route path="/admin-signup" element={<AdminSignupPage />} /> {/* Add Admin Signup Route */}
                       <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                   </main>
