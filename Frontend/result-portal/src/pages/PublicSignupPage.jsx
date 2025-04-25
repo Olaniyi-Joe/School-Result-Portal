@@ -32,7 +32,9 @@ export default function PublicSignupPage() {
     // The URL '/auth/public-register/' is a placeholder relative path.
     // Replace it with the actual endpoint when it's created.
     const publicRegisterPath = '/auth/public-register/';
-    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${publicRegisterPath}`;
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+    const apiUrl = `${baseURL}${publicRegisterPath}`;
+
     // --- /IMPORTANT ---
 
     try {
