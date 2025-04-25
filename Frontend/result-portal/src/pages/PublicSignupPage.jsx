@@ -8,6 +8,7 @@ export default function PublicSignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [childAdmissionNumber, setChildAdmissionNumber] = useState(''); // Added for parent signup
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,18 +21,21 @@ export default function PublicSignupPage() {
       setLoading(false);
       return;
     }
-    
-    if (!username || !email || !password) {
-      toast.error('Please fill in all fields.');
+
+    // Added check for child admission number
+    if (!username || !email || !password || !childAdmissionNumber) {
+      toast.error('Please fill in all fields, including Child Admission Number.');
       setLoading(false);
       return;
     }
 
     // --- IMPORTANT ---
-    // This requires a NEW backend endpoint that allows public registration.
-    // The URL '/auth/public-register/' is a placeholder relative path.
+    // --- IMPORTANT ---
+    // This requires a NEW backend endpoint that allows public PARENT registration
+    // and links the parent to the child via admission number.
+    // The URL '/auth/public-parent-register/' is a placeholder relative path.
     // Replace it with the actual endpoint when it's created.
-    const publicRegisterPath = '/auth/public-register/';
+    const publicRegisterPath = '/auth/public-parent-register/'; // Updated placeholder path
     const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     const apiUrl = `${baseURL}${publicRegisterPath}`;
 
@@ -39,12 +43,14 @@ export default function PublicSignupPage() {
 
     try {
       // Use default axios for public endpoint, construct full URL
+      // Use default axios for public endpoint, construct full URL
       const response = await axios.post(apiUrl, {
         username,
         email,
-        password 
+        password,
+        child_admission_number: childAdmissionNumber // Added child admission number
       });
-      toast.success('Signup successful! Please log in.');
+      toast.success('Parent signup successful! Please log in.'); // Updated success message
       navigate('/login'); // Redirect to login page after successful signup
     } catch (error) {
       console.error('Signup error:', error.response?.data || error.message);
@@ -58,7 +64,7 @@ export default function PublicSignupPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-900">Parent Sign Up</h2> {/* Changed Title */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700" htmlFor="username">
@@ -99,6 +105,22 @@ export default function PublicSignupPage() {
               required
             />
           </div>
+          {/* Added Child Admission Number Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700" htmlFor="childAdmissionNumber">
+              Child's Admission Number
+            </label>
+            <input
+              type="text"
+              id="childAdmissionNumber"
+              value={childAdmissionNumber}
+              onChange={(e) => setChildAdmissionNumber(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              placeholder="Enter your child's unique ID"
+            />
+          </div>
+          {/* End Added Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700" htmlFor="confirmPassword">
               Confirm Password
@@ -118,7 +140,7 @@ export default function PublicSignupPage() {
               className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={loading}
             >
-              {loading ? 'Signing up...' : 'Sign Up'}
+              {loading ? 'Signing up...' : 'Sign Up as Parent'} {/* Changed Button Text */}
             </button>
           </div>
         </form>
