@@ -4,11 +4,13 @@ import { toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function PublicSignupPage() {
-  const [username, setUsername] = useState('');
+  // Removed username, added first_name and last_name
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [childAdmissionNumber, setChildAdmissionNumber] = useState(''); // Added for parent signup
+  const [childAdmissionNumber, setChildAdmissionNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -22,9 +24,9 @@ export default function PublicSignupPage() {
       return;
     }
 
-    // Added check for child admission number
-    if (!username || !email || !password || !childAdmissionNumber) {
-      toast.error('Please fill in all fields, including Child Admission Number.');
+    // Updated check to include first/last name, removed username
+    if (!firstName || !lastName || !email || !password || !childAdmissionNumber) {
+      toast.error('Please fill in all fields.');
       setLoading(false);
       return;
     }
@@ -43,14 +45,14 @@ export default function PublicSignupPage() {
 
     try {
       // Use default axios for public endpoint, construct full URL
-      // Use default axios for public endpoint, construct full URL
       const response = await axios.post(apiUrl, {
-        username,
+        first_name: firstName, // Added first_name
+        last_name: lastName,   // Added last_name
         email,
         password,
-        child_admission_number: childAdmissionNumber // Added child admission number
+        child_admission_number: childAdmissionNumber
       });
-      toast.success('Parent signup successful! Please log in.'); // Updated success message
+      toast.success('Parent signup successful! Please log in.');
       navigate('/login'); // Redirect to login page after successful signup
     } catch (error) {
       console.error('Signup error:', error.response?.data || error.message);
@@ -64,24 +66,40 @@ export default function PublicSignupPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Parent Sign Up</h2> {/* Changed Title */}
+        <h2 className="text-2xl font-bold text-center text-gray-900">Parent Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Added First Name Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="username">
-              Username
+            <label className="block text-sm font-medium text-gray-700" htmlFor="firstName">
+              First Name
             </label>
             <input
               type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
             />
           </div>
+          {/* Added Last Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700" htmlFor="lastName">
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+            />
+          </div>
+          {/* Email Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700" htmlFor="email">
-              Email
+              Email Address
             </label>
             <input
               type="email"
