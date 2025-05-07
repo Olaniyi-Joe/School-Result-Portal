@@ -18,16 +18,24 @@ export default function StudentScores() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Use axiosInstance and relative paths
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          toast.error('Access token is missing. Please log in again.');
+          return;
+        }
+
+        const headers = {
+          Authorization: `Bearer ${token}`
+        };
         const [classRes, termRes] = await Promise.all([
-          axiosInstance.get('/classes/'),
-          axiosInstance.get('/terms/')
+          axiosInstance.get('/classes/', { headers }),
+          axiosInstance.get('/terms/', { headers })
         ]);
         setClasses(classRes.data);
-        setTerms(termRes.data)
+        setTerms(termRes.data);
       } catch (error) {
-        toast.error('Failed to fetch initial data')
-        console.error('Error:', error)
+        toast.error('Failed to fetch initial data');
+        console.error('Error:', error);
       }
     }
     fetchData()
@@ -38,8 +46,16 @@ export default function StudentScores() {
     if (selectedClass) {
       async function fetchSubjects() {
         try {
-          // Use axiosInstance and relative path
-          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`);
+          const token = localStorage.getItem('accessToken');
+          if (!token) {
+            toast.error('Access token is missing. Please log in again.');
+            return;
+          }
+
+          const headers = {
+            Authorization: `Bearer ${token}`
+          };
+          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`, { headers });
           setSubjects(res.data);
         } catch (error) {
           toast.error('Failed to fetch subjects')
@@ -61,8 +77,17 @@ export default function StudentScores() {
     
     setLoading(true);
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       const response = await axiosInstance.get('/scores/filter/', {
+        headers,
         params: {
           class_id: selectedClass,
           subject_id: selectedSubject,
@@ -84,9 +109,9 @@ export default function StudentScores() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">View Student Scores</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">View Student Scores</h2>
       
       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <select 

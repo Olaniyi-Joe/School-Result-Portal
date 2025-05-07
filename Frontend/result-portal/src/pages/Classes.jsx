@@ -21,24 +21,42 @@ export default function Classes() {
   // Fetch classes
   const fetchClasses = async () => {
     try {
-      const res = await axiosInstance.get('/classes/'); // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      const res = await axiosInstance.get('/classes/', { headers });
       setClasses(res.data);
     } catch (err) {
-      toast.error('Failed to fetch classes')
-      console.error(err)
+      toast.error('Failed to fetch classes');
+      console.error(err);
     }
-  }
+  };
 
   // Fetch terms
   const fetchTerms = async () => {
     try {
-      const res = await axiosInstance.get('/terms/'); // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      const res = await axiosInstance.get('/terms/', { headers });
       setTerms(res.data);
     } catch (err) {
-      toast.error('Failed to fetch terms')
-      console.error(err)
+      toast.error('Failed to fetch terms');
+      console.error(err);
     }
-  }
+  };
 
   useEffect(() => {
     fetchTerms()
@@ -50,11 +68,19 @@ export default function Classes() {
     e.preventDefault()
     setLoading(true);
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       await axiosInstance.post('/classes/', {
         name,
         term: termId,
-      })
+      }, { headers})
       setName('')
       setTermId('')
       toast.success('Class added successfully')
@@ -78,11 +104,19 @@ export default function Classes() {
   // Update class
   const handleUpdate = async () => {
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       await axiosInstance.put(`/classes/${editingClass.id}/`, {
         name: editingName,
         term: editingTermId,
-      })
+      }, { headers })
       toast.success('Class updated successfully')
       setEditModalOpen(false)
       fetchClasses()
@@ -96,8 +130,16 @@ export default function Classes() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this class?')) return;
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.delete(`/classes/${id}/`);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      await axiosInstance.delete(`/classes/${id}/`, { headers });
       toast.success('Class deleted successfully');
       fetchClasses();
     } catch (err) {
@@ -107,9 +149,9 @@ export default function Classes() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Manage Classes</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Manage Classes</h2>
 
       {/* Add New Class */}
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -144,14 +186,14 @@ export default function Classes() {
       </form>
 
       {/* Class List */}
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {classes.map(cls => (
-          <li key={cls.id} className="border-b py-2 flex justify-between items-center text-gray-800">
+          <div key={cls.id} className="border rounded p-4 bg-white shadow-md">
             <div>
               <span className="font-semibold">{cls.name}</span>{' '}
               <span className="text-sm text-gray-500">({cls.term_name || 'Unknown Term'})</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={() => openEditModal(cls)}
                 className="text-blue-600 hover:underline"
@@ -165,9 +207,9 @@ export default function Classes() {
                 Delete
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       {/* Edit Modal */}
       <Modal

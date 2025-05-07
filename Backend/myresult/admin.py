@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import Session, Term, Class, Subject, Student, Score, School, EffectiveDomain, PsychomotiveDomain, CommentsTemplate
+from .models import Session, Term, Class, Subject, Student, Enrollment, Score, School, EffectiveDomain, PsychomotiveDomain, CommentsTemplate
 
 admin.site.register(Session)
 admin.site.register(Term)
 admin.site.register(Class)
 admin.site.register(Subject)
 admin.site.register(Student)
+admin.site.register(Enrollment)
 admin.site.register(Score)
 admin.site.register(School)
 admin.site.register(EffectiveDomain)

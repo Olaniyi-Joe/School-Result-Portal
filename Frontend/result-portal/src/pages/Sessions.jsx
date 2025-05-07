@@ -1,7 +1,5 @@
-// src/pages/Sessions.jsx
 import { useState, useEffect } from 'react';
-// import axios from 'axios'; // Remove default axios
-import axiosInstance from '../api/axiosInstance'; // Import the configured instance
+import axiosInstance from '../api/axiosInstance'; 
 import Modal from '../components/Modal';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
@@ -19,15 +17,21 @@ export default function Sessions() {
 
   const fetchSessions = async () => {
     try {
-      // Use axiosInstance and relative path
-      const res = await axiosInstance.get('/sessions/');
+      const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axiosInstance.get('/sessions/', { headers });
       setSessions(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       toast.error('Failed to fetch sessions')
       console.log('Error fetching sessions:', err)
     }
   }
-
+ 
   useEffect(() => {
     fetchSessions()
   }, [])
@@ -36,8 +40,14 @@ export default function Sessions() {
     e.preventDefault()
     setLoading(true);
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.post('/sessions/', { name });
+      const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      await axiosInstance.post('/sessions/', { name }, { headers });
       setName('');
       toast.success('Session added!');
       fetchSessions()
@@ -57,8 +67,14 @@ export default function Sessions() {
 
   const handleEditSubmit = async () => {
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.put(`/sessions/${selectedSession.id}/`, { name: editName });
+      const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      await axiosInstance.put(`/sessions/${selectedSession.id}/`, { name: editName }, { headers });
       toast.success('Session updated!');
       setEditModalOpen(false);
       fetchSessions()
@@ -71,8 +87,14 @@ export default function Sessions() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this session?')) return;
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.delete(`/sessions/${id}/`);
+      const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      await axiosInstance.delete(`/sessions/${id}/`, { headers });
       toast.success('Session deleted!');
       fetchSessions();
     } catch (err){
@@ -82,9 +104,9 @@ export default function Sessions() {
   }
 
   return (
-    <div>
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Manage Sessions</h2>
+      <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Sessions</h1>
 
       <form onSubmit={handleSubmit} className="mb-6 flex gap-4">
         <input
@@ -104,21 +126,22 @@ export default function Sessions() {
         </button>
       </form>
 
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sessions.map((session) => (
-          <li
+          <div
             key={session.id}
-            className="flex justify-between items-center border-b py-2 text-gray-800 hover:bg-gray-100 px-2 rounded cursor-pointer"
+            className="border rounded p-4 bg-white shadow-md"
             onClick={() => navigate(`/sessions/${session.id}/terms`)}
           >
-            <span>{session.name}</span>
-            <div className="space-x-2">
+            <h2 className="text-lg font-semibold">{session.name}</h2>
+            <p className="text-gray-600">Details about this session</p>
+            <div className="space-x-2 mt-2">
               <button onClick={(e) => { e.stopPropagation(); openEditModal(session) }} className="text-sm text-blue-600">Edit</button>
               <button onClick={(e) => { e.stopPropagation(); handleDelete(session.id) }} className="text-sm text-red-600">Delete</button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       <Modal
         isOpen={editModalOpen}

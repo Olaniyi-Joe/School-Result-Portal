@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from authentication.models import User  # Import User from authentication instead
+
+# Remove the User class since we're using authentication.User
 
 class Session(models.Model):
     name = models.CharField(max_length=10, unique=True)
@@ -27,6 +30,7 @@ class Class(models.Model):
 class Subject(models.Model):
     name = models.CharField(max_length=100)
     class_group = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="subjects")
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='subjects')  # Updated reference
 
     class Meta:
         unique_together = ('name', 'class_group')
@@ -51,6 +55,7 @@ class Student(models.Model):
     school_days = models.IntegerField(default=0)
     last_term_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
+    parent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='children')  # Updated reference
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"

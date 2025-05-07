@@ -8,7 +8,9 @@ export default function AdminSignupPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('teacher'); // Default or allow selection
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [userType, setUserType] = useState('admin'); // Default or allow selection
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -17,7 +19,7 @@ export default function AdminSignupPage() {
     setLoading(true);
     
     // Basic validation
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !firstName || !lastName) {
       toast.error('Please fill in all fields.');
       setLoading(false);
       return;
@@ -28,13 +30,15 @@ export default function AdminSignupPage() {
       // Headers are now handled by the interceptor
       const response = await axiosInstance.post(
         '/auth/register/', 
-        { username, email, password, user_type: userType } // Adjust payload based on backend expectations
+        { username, email, password, first_name: firstName, last_name: lastName, role: 'ADMIN' } // Role is now set to 'ADMIN' (uppercase)
       );
       toast.success('User registered successfully!');
       // Optionally navigate somewhere or clear form
       setUsername('');
       setEmail('');
       setPassword('');
+      setFirstName('');
+      setLastName('');
       // navigate('/users'); // Example: navigate to a user list page if it exists
     } catch (error) {
       console.error('Registration error:', error.response?.data || error.message);
@@ -46,73 +50,71 @@ export default function AdminSignupPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Register New User (Admin)</h1>
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md max-w-md mx-auto">
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-            Username
-          </label>
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-center">Admin Signup</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Username</label>
           <input
             type="text"
-            id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="border px-4 py-2 rounded w-full"
+            placeholder="Enter your username"
             required
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-            Email
-          </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
-            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="border px-4 py-2 rounded w-full"
+            placeholder="Enter your email"
             required
           />
         </div>
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-            Password
-          </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
           <input
             type="password"
-            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            className="border px-4 py-2 rounded w-full"
+            placeholder="Enter your password"
             required
           />
         </div>
-        {/* Optional: Add user type selection if needed */}
-        {/* <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userType">
-            User Type
-          </label>
-          <select 
-            id="userType" 
-            value={userType} 
-            onChange={(e) => setUserType(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option value="teacher">Teacher</option>
-            <option value="student">Student</option>
-             <option value="admin">Admin</option> // Add other roles as needed
-          </select>
-        </div> */}
-        <div className="flex items-center justify-between">
-          <button
-            type="submit"
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={loading}
-          >
-            {loading ? 'Registering...' : 'Register User'}
-          </button>
+        <div>
+          <label className="block text-sm font-medium mb-1">First Name</label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="border px-4 py-2 rounded w-full"
+            placeholder="Enter your first name"
+            required
+          />
         </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Last Name</label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="border px-4 py-2 rounded w-full"
+            placeholder="Enter your last name"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full"
+          disabled={loading}
+        >
+          {loading ? 'Registering...' : 'Register User'}
+        </button>
       </form>
     </div>
   );

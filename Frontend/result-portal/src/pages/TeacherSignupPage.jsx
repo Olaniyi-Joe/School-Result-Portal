@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-export default function PublicSignupPage() {
+export default function TeacherSignupPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [childAdmissionNumber, setChildAdmissionNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,25 +22,20 @@ export default function PublicSignupPage() {
       return;
     }
 
-    if (!firstName || !lastName || !email || !password || !childAdmissionNumber) {
+    if (!firstName || !lastName || !email || !password) {
       toast.error('Please fill in all fields.');
       setLoading(false);
       return;
     }
 
-    const publicRegisterPath = '/auth/public-parent-register/';
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-    const apiUrl = `${baseURL}${publicRegisterPath}`;
-
     try {
-      const response = await axios.post(apiUrl, {
+      const response = await axios.post('http://localhost:8000/api/auth/teacher-register/', {
         first_name: firstName,
         last_name: lastName,
         email,
         password,
-        child_admission_number: childAdmissionNumber
       });
-      toast.success('Parent signup successful! Please log in.');
+      toast.success('Teacher signup successful! Please log in.');
       navigate('/login');
     } catch (error) {
       console.error('Signup error:', error.response?.data || error.message);
@@ -53,16 +47,13 @@ export default function PublicSignupPage() {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center">Parent Sign Up</h1>
+    <div className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-center">Teacher Signup</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="firstName">
-            First Name
-          </label>
+          <label className="block text-sm font-medium mb-1">First Name</label>
           <input
             type="text"
-            id="firstName"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             className="border px-4 py-2 rounded w-full"
@@ -71,12 +62,9 @@ export default function PublicSignupPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="lastName">
-            Last Name
-          </label>
+          <label className="block text-sm font-medium mb-1">Last Name</label>
           <input
             type="text"
-            id="lastName"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             className="border px-4 py-2 rounded w-full"
@@ -85,12 +73,9 @@ export default function PublicSignupPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="email">
-            Email Address
-          </label>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
-            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border px-4 py-2 rounded w-full"
@@ -99,12 +84,9 @@ export default function PublicSignupPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="password">
-            Password
-          </label>
+          <label className="block text-sm font-medium mb-1">Password</label>
           <input
             type="password"
-            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border px-4 py-2 rounded w-full"
@@ -113,26 +95,9 @@ export default function PublicSignupPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="childAdmissionNumber">
-            Child's Admission Number
-          </label>
-          <input
-            type="text"
-            id="childAdmissionNumber"
-            value={childAdmissionNumber}
-            onChange={(e) => setChildAdmissionNumber(e.target.value)}
-            className="border px-4 py-2 rounded w-full"
-            placeholder="Enter your child's unique ID"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="confirmPassword">
-            Confirm Password
-          </label>
+          <label className="block text-sm font-medium mb-1">Confirm Password</label>
           <input
             type="password"
-            id="confirmPassword"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="border px-4 py-2 rounded w-full"
@@ -142,18 +107,12 @@ export default function PublicSignupPage() {
         </div>
         <button
           type="submit"
-          className={`bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full"
           disabled={loading}
         >
-          {loading ? 'Signing up...' : 'Sign Up as Parent'}
+          {loading ? 'Signing up...' : 'Signup'}
         </button>
       </form>
-      <p className="text-center text-sm text-gray-600 mt-4">
-        Already have an account?{' '}
-        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Log in
-        </Link>
-      </p>
     </div>
   );
 }

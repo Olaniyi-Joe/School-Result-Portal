@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { useState, useEffect } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Sidebar from './components/Sidebar'
@@ -21,9 +20,10 @@ import SchoolSettings from './pages/SchoolSettings';
 import CommentsManagement from './pages/CommentsManagement';
 import AdminSignupPage from './pages/AdminSignupPage'; // Import Admin Signup
 import PublicSignupPage from './pages/PublicSignupPage'; // Import Public Signup
+import TeacherSignupPage from './pages/TeacherSignupPage'; // Import Teacher Signup Page
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('accessToken'); // Updated to check for 'accessToken'
   if (!token) {
     return <Navigate to="/login" />;
   }
@@ -54,6 +54,9 @@ export default function App() {
             path="/signup" 
             element={isAlreadyLoggedIn() ? <Navigate to="/" /> : <PublicSignupPage />} 
           /> 
+          <Route path="/teacher-signup" element={<TeacherSignupPage />} />
+          <Route path="/public-signup" element={<PublicSignupPage />} />
+          <Route path="/admin-signup" element={<AdminSignupPage />} />
           
           {/* Protected Routes */}
           <Route path="/*" element={
@@ -77,7 +80,7 @@ export default function App() {
                       <Route path="/student-domains" element={<StudentDomains />} />
                       <Route path="/school-settings" element={<SchoolSettings />} />
                       <Route path="/comments" element={<CommentsManagement />} />
-                      <Route path="/admin-signup" element={<AdminSignupPage />} /> {/* Add Admin Signup Route */}
+                      <Route path="/login" element={<Login />} />
                       <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                   </main>

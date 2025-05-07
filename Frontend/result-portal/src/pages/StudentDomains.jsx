@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const RATING_OPTIONS = ['A', 'B', 'C', 'D', 'E']
-
+ 
 const EFFECTIVE_DOMAIN_FIELDS = [
   { key: 'aesthetic', label: 'Aesthetic' },
   { key: 'appreciation', label: 'Appreciation' },
@@ -41,11 +41,18 @@ export default function StudentDomains() {
 
   useEffect(() => {
     async function fetchData() {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       try {
         // Use axiosInstance and relative paths
         const [studentsRes, termsRes] = await Promise.all([
-          axiosInstance.get('/students/'),
-          axiosInstance.get('/terms/')
+          axiosInstance.get('/students/', { headers }),
+          axiosInstance.get('/terms/', { headers })
         ]);
         setStudents(studentsRes.data);
         setTerms(termsRes.data)
@@ -71,6 +78,13 @@ export default function StudentDomains() {
       return
     }
 
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      toast.error('Access token is missing. Please log in again.');
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+
     setLoading(true);
     try {
       // Use axiosInstance and relative paths
@@ -79,13 +93,15 @@ export default function StudentDomains() {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
-          }
+          },
+          headers
         }),
         axiosInstance.get('/psychomotive-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
-          }
+          },
+          headers
         })
       ])
       
@@ -131,12 +147,19 @@ export default function StudentDomains() {
       return
     }
 
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      toast.error('Access token is missing. Please log in again.');
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+
     try {
       const id = domain === 'effective' ? effectiveDomain.id : psychomotorDomain.id;
       const endpoint = domain === 'effective' ? 'effective-domains' : 'psychomotive-domains';
       
       // Use axiosInstance and relative path
-      await axiosInstance.delete(`/${endpoint}/${id}/`);
+      await axiosInstance.delete(`/${endpoint}/${id}/`, { headers });
       toast.success(`${domain} domain assessment deleted successfully`);
       
       // Reset the state for the deleted domain
@@ -158,6 +181,13 @@ export default function StudentDomains() {
       return
     }
 
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      toast.error('Access token is missing. Please log in again.');
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+
     setSubmitting(true)
     try {
       // Prepare payloads
@@ -178,13 +208,13 @@ export default function StudentDomains() {
       await Promise.all([
         // Submit effective domain
         effectiveDomain.id
-          ? axiosInstance.put(`/effective-domains/${effectiveDomain.id}/`, effectivePayload)
-          : axiosInstance.post('/effective-domains/', effectivePayload),
+          ? axiosInstance.put(`/effective-domains/${effectiveDomain.id}/`, effectivePayload, { headers })
+          : axiosInstance.post('/effective-domains/', effectivePayload, { headers }),
         
         // Submit psychomotor domain
         psychomotorDomain.id
-          ? axiosInstance.put(`/psychomotive-domains/${psychomotorDomain.id}/`, psychomotorPayload)
-          : axiosInstance.post('/psychomotive-domains/', psychomotorPayload)
+          ? axiosInstance.put(`/psychomotive-domains/${psychomotorDomain.id}/`, psychomotorPayload, { headers })
+          : axiosInstance.post('/psychomotive-domains/', psychomotorPayload, { headers })
       ]);
 
       toast.success('Assessments saved successfully');

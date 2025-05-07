@@ -20,15 +20,22 @@ export default function EnterScores() {
   useEffect(() => {
     async function fetchData() {
       try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          toast.error('Access token is missing. Please log in again.');
+          return;
+        }
+        const headers = { Authorization: `Bearer ${token}` };
+
         const [classRes, termRes] = await Promise.all([
-          axiosInstance.get('/classes/'), // Use axiosInstance and relative path
-          axiosInstance.get('/terms/')   // Use axiosInstance and relative path
+          axiosInstance.get('/classes/', { headers }),
+          axiosInstance.get('/terms/', { headers })
         ]);
         setClasses(classRes.data);
-        setTerms(termRes.data)
+        setTerms(termRes.data);
       } catch (error) {
-        toast.error('Failed to fetch reference data')
-        console.error('Error fetching reference data:', error)
+        toast.error('Failed to fetch reference data');
+        console.error('Error fetching reference data:', error);
       }
     }
     fetchData()
@@ -39,8 +46,14 @@ export default function EnterScores() {
     if (selectedClass) {
       async function fetchSubjects() {
         try {
-          // Use axiosInstance and relative path
-          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`);
+          const token = localStorage.getItem('accessToken');
+          if (!token) {
+            toast.error('Access token is missing. Please log in again.');
+            return;
+          }
+          const headers = { Authorization: `Bearer ${token}` };
+
+          const res = await axiosInstance.get(`/classes/${selectedClass}/subjects/`, { headers });
           setSubjects(res.data);
         } catch (error) {
           toast.error('Failed to fetch subjects for this class')
@@ -69,12 +82,20 @@ export default function EnterScores() {
     
     setLoading(true);
     try {
-      // Use axiosInstance and relative paths
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       const studentsResponse = await axiosInstance.get(
-        `/stu/class/${selectedClass}/subjects/${selectedSubject}/students/`
+        `/stu/class/${selectedClass}/subjects/${selectedSubject}/students/`,
+        { headers }
       );
 
       const scoresResponse = await axiosInstance.get('/scores/filter/', {
+        headers,
         params: {
           class_id: selectedClass,
           subject_id: selectedSubject,
@@ -164,6 +185,13 @@ export default function EnterScores() {
     
     setSubmitting(true)
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       // Format scores data according to the backend's expected structure
       const formattedScores = studentScores.map(student => ({
         student_id: student.student_id,
@@ -171,10 +199,10 @@ export default function EnterScores() {
         exam_score: student.exam_score,
       }));
 
-      // Use axiosInstance and relative path
       await axiosInstance.post(
         `/scores/input/subject/${selectedSubject}/class/${selectedClass}/term/${selectedTerm}/`,
-        { scores: formattedScores }
+        { scores: formattedScores },
+        { headers }
       );
       toast.success('Scores submitted successfully')
       
@@ -200,15 +228,15 @@ export default function EnterScores() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Enter Student Scores</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Enter Student Scores</h2>
       
       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <select 
           value={selectedClass} 
           onChange={(e) => setSelectedClass(e.target.value)}
-          className="border px-4 py-2 rounded"
+          className="border px-4 py-2 rounded w-full"
         >
           <option value="">Select Class</option>
           {classes.map(cls => (
@@ -219,7 +247,7 @@ export default function EnterScores() {
         <select 
           value={selectedSubject} 
           onChange={(e) => setSelectedSubject(e.target.value)}
-          className="border px-4 py-2 rounded"
+          className="border px-4 py-2 rounded w-full"
           disabled={!selectedClass}
         >
           <option value="">Select Subject</option>
@@ -231,7 +259,7 @@ export default function EnterScores() {
         <select 
           value={selectedTerm} 
           onChange={(e) => setSelectedTerm(e.target.value)}
-          className="border px-4 py-2 rounded"
+          className="border px-4 py-2 rounded w-full"
         >
           <option value="">Select Term</option>
           {terms.map(term => (
@@ -241,7 +269,7 @@ export default function EnterScores() {
         
         <button 
           onClick={handleFetchStudents} 
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
           disabled={loading || !selectedClass || !selectedSubject || !selectedTerm}
         >
           {loading ? 'Loading...' : dataFetched ? 'Refresh Data' : 'Load Students'}
@@ -303,7 +331,7 @@ export default function EnterScores() {
           
           <button 
             onClick={handleSubmitScores} 
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full md:w-auto"
             disabled={submitting}
           >
             {submitting ? 'Submitting...' : 'Save Scores'}

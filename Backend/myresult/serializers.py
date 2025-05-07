@@ -1,5 +1,29 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import Session, Term, Class, Subject, Student, Enrollment, Score, EffectiveDomain, PsychomotiveDomain, School, CommentsTemplate, ResultSummary
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'user_type', 'phone_number')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'phone_number')
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
 
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,7 +55,7 @@ class StudentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Student
-        fields = ['id', 'firstname', 'lastname', 'othername', 'email', 'picture', 'current_class']
+        fields = ['id', 'firstname', 'lastname', 'othername', 'email', 'picture', 'current_class', 'registration_number', 'days_present',]
     
     def get_current_class(self, obj):
         # Get the most recent enrollment for this student

@@ -1,22 +1,30 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+from .permissions import IsSuperAdmin, IsSchoolAdmin, IsTeacher, IsParent
 from .models import Term, Session, Class, Subject, Student, Enrollment, Score, EffectiveDomain, PsychomotiveDomain, School, CommentsTemplate, ResultSummary
 from .serializers import TermSerializer, SessionSerializer, ClassSerializer, SubjectSerializer, StudentSerializer, EnrollmentSerializer, BulkStudentEnrollmentSerializer, ScoreSerializer, ScoreInputSerializer, EffectiveDomainSerializer, PsychomotiveDomainSerializer, SchoolSerializer, CommentsTemplateSerializer, ResultSummarySerializer
 
+User = get_user_model()
+
 
 class SessionViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
-
+    
 class TermViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Term.objects.all()
     serializer_class = TermSerializer
 
-
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def terms_by_session(request, session_id):
     """
     Return all terms under a given session.
@@ -30,10 +38,12 @@ def terms_by_session(request, session_id):
         return Response({"error": "Session not found"}, status=404)
 
 class ClassViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
 
 class SubjectViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
 
@@ -58,6 +68,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def bulk_create_subjects(request):
     """
     Payload example:
@@ -94,6 +105,7 @@ def bulk_create_subjects(request):
     }, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def subjects_by_class(request, class_id):
     try:
         class_instance = Class.objects.get(id=class_id)
@@ -105,10 +117,12 @@ def subjects_by_class(request, class_id):
     return Response(serializer.data)
 
 class StudentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
 
@@ -185,6 +199,8 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class BulkStudentEnrollmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         serializer = BulkStudentEnrollmentSerializer(data=request.data, many=True)
         if serializer.is_valid():
@@ -220,6 +236,7 @@ class BulkStudentEnrollmentView(APIView):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def students_by_subject_in_class(request, class_id, subject_id):
     try:
         class_obj = Class.objects.get(id=class_id)
@@ -240,16 +257,14 @@ def students_by_subject_in_class(request, class_id, subject_id):
 
 
 @api_view(['POST'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def input_scores(request, subject_id, class_id, term_id):
     subject = get_object_or_404(Subject, id=subject_id, class_group_id=class_id)
     term = get_object_or_404(Term, id=term_id)
 
     # Check if the request.user is authorized to enter scores for this subject
-    '''
-    if subject.teacher.user != request.user:
-        return Response({"detail": "You are not authorized to input scores for this subject."}, status=status.HTTP_403_FORBIDDEN)
-    '''
+    # if subject.teacher.user != request.user:
+       # return Response({"detail": "You are not authorized to input scores for this subject."}, status=status.HTTP_403_FORBIDDEN)
 
     # Get all students enrolled in the subject's class for the given term
     enrolled_students = Enrollment.objects.filter(student_class_id=class_id, term=term).select_related('student')
@@ -288,7 +303,7 @@ def input_scores(request, subject_id, class_id, term_id):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def student_scores(request, student_id):
     try:
         student = Student.objects.get(id=student_id)
@@ -301,6 +316,7 @@ def student_scores(request, student_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def filter_scores(request):
     subject_id = request.GET.get('subject_id')
     class_id = request.GET.get('class_id')
@@ -325,6 +341,7 @@ def filter_scores(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def student_class(request, student_id):
     try:
         student = Student.objects.get(id=student_id)
@@ -349,6 +366,7 @@ def student_class(request, student_id):
     return Response(class_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def student_detail(request, student_id):
     try:
         student = Student.objects.get(id=student_id)
@@ -379,6 +397,7 @@ def student_detail(request, student_id):
     return Response(student_data, status=status.HTTP_200_OK)
 
 class EffectiveDomainViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = EffectiveDomain.objects.all()
     serializer_class = EffectiveDomainSerializer
 
@@ -395,6 +414,7 @@ class EffectiveDomainViewSet(viewsets.ModelViewSet):
         return queryset
 
 class PsychomotiveDomainViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = PsychomotiveDomain.objects.all()
     serializer_class = PsychomotiveDomainSerializer
 
@@ -411,16 +431,23 @@ class PsychomotiveDomainViewSet(viewsets.ModelViewSet):
         return queryset
 
 class SchoolViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsSuperAdmin]
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 
     def create(self, request, *args, **kwargs):
-        if School.objects.exists():
+        try:
+            if School.objects.exists():
+                return Response(
+                    {"detail": "School details already exist. Use PUT to update."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
             return Response(
-                {"detail": "School details already exist. Use PUT to update."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"detail": "An error occurred while creating the school record.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        return super().create(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
         instance = School.objects.first()
@@ -433,6 +460,7 @@ class SchoolViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class CommentsTemplateViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = CommentsTemplate.objects.all()
     serializer_class = CommentsTemplateSerializer
 
@@ -449,11 +477,13 @@ class CommentsTemplateViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ResultSummaryViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = ResultSummary.objects.all()
     serializer_class = ResultSummarySerializer
     filterset_fields = ['student', 'term', 'session']
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def student_result_history(request, student_id):
     """Get a student's result history across all terms and sessions."""
     try:
@@ -466,6 +496,7 @@ def student_result_history(request, student_id):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def class_rankings(request, class_id, term_id):
     """Get rankings for all students in a class for a specific term."""
     try:

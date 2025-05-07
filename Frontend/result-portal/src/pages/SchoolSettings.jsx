@@ -30,22 +30,32 @@ export default function SchoolSettings() {
 
   const fetchSchoolDetails = async () => {
     try {
-      const response = await axiosInstance.get('/school/'); // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      };
+      const response = await axiosInstance.get('/school/', { headers }); // Add headers to the request
       setSchoolData(response.data);
       // Set preview URLs for existing images
       setPreviewUrls({
         logo: response.data.logo,
         principal_signature: response.data.principal_signature,
         school_stamp: response.data.school_stamp
-      })
+      });
     } catch (error) {
       if (error.response?.status !== 404) {
-        toast.error('Failed to fetch school details')
+        toast.error('Failed to fetch school details');
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -71,52 +81,58 @@ export default function SchoolSettings() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
+    e.preventDefault();
+    setSaving(true);
 
     try {
-      const formData = new FormData()
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      };
+
+      const formData = new FormData();
       Object.keys(schoolData).forEach(key => {
         if (schoolData[key] !== null) {
-          formData.append(key, schoolData[key])
+          formData.append(key, schoolData[key]);
         }
       });
 
-      // Use axiosInstance and relative paths, keep Content-Type for FormData
       if (schoolData.id) {
-        await axiosInstance.put(`/school/${schoolData.id}/`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await axiosInstance.put(`/school/${schoolData.id}/`, formData, { headers });
       } else {
-        await axiosInstance.post('/school/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
+        await axiosInstance.post('/school/', formData, { headers });
       }
 
-      toast.success('School details saved successfully')
-      fetchSchoolDetails() // Refresh data
+      toast.success('School details saved successfully');
+      fetchSchoolDetails(); // Refresh data
     } catch (error) {
-      toast.error('Failed to save school details')
-      console.error('Error:', error)
+      if (error.response?.status === 401) {
+        toast.error('Unauthorized. Please log in again.');
+      } else {
+        toast.error('Failed to save school details');
+      }
+      console.error('Error:', error);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return <div className="p-6">Loading...</div>
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-6">School Settings</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center md:text-left">School Settings</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
@@ -277,7 +293,7 @@ export default function SchoolSettings() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
             disabled={saving}
           >
             {saving ? 'Saving...' : 'Save Changes'}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Modal from '../components/Modal'
+import Modal from '../components/Modal';
 
 export default function CommentsManagement() {
   const [comments, setComments] = useState([])
@@ -26,7 +26,18 @@ export default function CommentsManagement() {
 
   const fetchComments = async () => {
     try {
-      const res = await axiosInstance.get('/comments-templates/'); // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+            if (!token) {
+              toast.error('Access token is missing. Please log in again.');
+              return;
+            }
+      
+            const headers = {
+              Authorization: `Bearer ${token}`
+            };
+      const res = await axiosInstance.get('/comments-templates/',
+        { headers }
+      );
       setComments(res.data);
     } catch (err) {
       toast.error('Failed to fetch comments')
@@ -42,12 +53,20 @@ export default function CommentsManagement() {
     e.preventDefault()
     setLoading(true);
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+            if (!token) {
+              toast.error('Access token is missing. Please log in again.');
+              return;
+            }
+      
+            const headers = {
+              Authorization: `Bearer ${token}`
+            };
       await axiosInstance.post('/comments-templates/', {
         grade,
         comment_type: commentType,
         comment
-      })
+      }, { headers })
       toast.success('Comment template added successfully!')
       setGrade('')
       setComment('')
@@ -70,12 +89,20 @@ export default function CommentsManagement() {
 
   const handleUpdate = async () => {
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+            if (!token) {
+              toast.error('Access token is missing. Please log in again.');
+              return;
+            }
+      
+            const headers = {
+              Authorization: `Bearer ${token}`
+            };
       await axiosInstance.put(`/comments-templates/${editingComment.id}/`, {
         grade,
         comment_type: commentType,
         comment
-      })
+      }, { headers })
       toast.success('Comment template updated successfully!')
       setEditModalOpen(false)
       fetchComments()
@@ -88,8 +115,16 @@ export default function CommentsManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this comment template?')) return;
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.delete(`/comments-templates/${id}/`);
+      const token = localStorage.getItem('accessToken');
+            if (!token) {
+              toast.error('Access token is missing. Please log in again.');
+              return;
+            }
+      
+            const headers = {
+              Authorization: `Bearer ${token}`
+            };
+      await axiosInstance.delete(`/comments-templates/${id}/`, { headers });
       toast.success('Comment template deleted successfully!');
       fetchComments();
     } catch (err) {
@@ -99,13 +134,13 @@ export default function CommentsManagement() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-6">Manage Comment Templates</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center md:text-left">Manage Comment Templates</h2>
 
       {/* Add new comment form */}
-      <form onSubmit={handleSubmit} className="mb-8 space-y-4 max-w-2xl">
-        <div className="flex gap-4">
+      <form onSubmit={handleSubmit} className="mb-8 space-y-4 max-w-2xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium mb-1">Grade</label>
             <select
@@ -145,7 +180,7 @@ export default function CommentsManagement() {
         </div>
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
           disabled={loading}
         >
           {loading ? 'Adding...' : 'Add Comment Template'}
@@ -157,16 +192,16 @@ export default function CommentsManagement() {
         {comments.map((comment) => (
           <div
             key={comment.id}
-            className="border rounded p-4 bg-white flex justify-between items-start"
+            className="border rounded p-4 bg-white flex flex-col md:flex-row justify-between items-start md:items-center"
           >
             <div>
-              <div className="flex gap-4 mb-2 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-4 mb-2 text-sm text-gray-600">
                 <span>Grade: {comment.grade_display}</span>
                 <span>Type: {comment.comment_type_display}</span>
               </div>
               <p className="text-gray-800">{comment.comment}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-2 md:mt-0">
               <button
                 onClick={() => openEditModal(comment)}
                 className="text-blue-600 hover:underline"
@@ -191,7 +226,7 @@ export default function CommentsManagement() {
         title="Edit Comment Template"
       >
         <div className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1">Grade</label>
               <select

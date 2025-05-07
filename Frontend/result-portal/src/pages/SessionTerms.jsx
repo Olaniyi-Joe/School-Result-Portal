@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 import { useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import Modal from '../components/Modal'
+import React from 'react';
 
 export default function SessionTerms() {
   const { sessionId } = useParams()
@@ -12,9 +13,17 @@ export default function SessionTerms() {
   const [selectedTerm, setSelectedTerm] = useState(null)
   const [editName, setEditName] = useState('')
 
+  // Ensure all API calls include the Authorization header with the token
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    toast.error('Access token is missing. Please log in again.');
+    return;
+  }
+  const headers = { Authorization: `Bearer ${token}` };
+ 
   const fetchTerms = async () => {
     try {
-      const res = await axiosInstance.get(`/sessions/${sessionId}/terms/`); // Use axiosInstance and relative path
+      const res = await axiosInstance.get(`/sessions/${sessionId}/terms/`, { headers }); // Use axiosInstance and relative path
       setTerms(res.data);
     } catch (err) {
       toast.error('Failed to fetch terms')
@@ -35,7 +44,7 @@ export default function SessionTerms() {
   const handleEditSubmit = async () => {
     try {
       // Use axiosInstance and relative path
-      await axiosInstance.put(`/terms/${selectedTerm.id}/`, { name: editName, session: sessionId });
+      await axiosInstance.put(`/terms/${selectedTerm.id}/`, { name: editName, session: sessionId }, { headers });
       toast.success('Term updated!');
       setEditModalOpen(false);
       fetchTerms()
@@ -49,7 +58,7 @@ export default function SessionTerms() {
     if (!window.confirm('Are you sure you want to delete this term?')) return;
     try {
       // Use axiosInstance and relative path
-      await axiosInstance.delete(`/terms/${id}/`);
+      await axiosInstance.delete(`/terms/${id}/`, { headers });
       toast.success('Term deleted!');
       fetchTerms();
     } catch (err){
@@ -59,24 +68,20 @@ export default function SessionTerms() {
   }
 
   return (
-    <div>
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Terms in Selected Session</h2>
-
-      <ul className="space-y-2">
+      <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Session Terms</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {terms.map((term) => (
-          <li
-            key={term.id}
-            className="flex justify-between items-center border-b py-2 text-gray-800 px-2 hover:bg-gray-100"
-          >
-            <span>{term.name}</span>
+          <div key={term.id} className="border rounded p-4 bg-white shadow-md">
+            <h2 className="text-lg font-semibold">{term.name}</h2>
             <div className="space-x-2">
               <button onClick={() => openEditModal(term)} className="text-sm text-blue-600">Edit</button>
               <button onClick={() => handleDelete(term.id)} className="text-sm text-red-600">Delete</button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       <Modal
         isOpen={editModalOpen}

@@ -21,6 +21,14 @@ const StudentResults = () => {
   const [schoolInfo, setSchoolInfo] = useState(null)
   const [resultSummary, setResultSummary] = useState(null)
 
+  // Ensure all API calls include the Authorization header with the token
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    toast.error('Access token is missing. Please log in again.');
+    return;
+  }
+  const headers = { Authorization: `Bearer ${token}` };
+
   // Filter students based on search query
   const filteredStudents = students.filter(student => {
     const fullName = `${student.firstname} ${student.lastname}`.toLowerCase()
@@ -33,14 +41,14 @@ const StudentResults = () => {
       try {
         // Use axiosInstance and relative paths
         const [studentsRes, sessionsRes] = await Promise.all([
-          axiosInstance.get('/students/'),
-          axiosInstance.get('/sessions/')
+          axiosInstance.get('/students/', { headers }),
+          axiosInstance.get('/sessions/', { headers })
         ]);
         setStudents(studentsRes.data);
         setSessions(sessionsRes.data);
-
+ 
         // Fetch school details
-        const schoolRes = await axiosInstance.get('/school/'); // Use axiosInstance
+        const schoolRes = await axiosInstance.get('/school/', { headers }); // Use axiosInstance
         if (schoolRes.data) {
           setSchoolInfo(schoolRes.data);
         }
@@ -63,7 +71,7 @@ const StudentResults = () => {
 
       try {
         // Use axiosInstance and relative path
-        const res = await axiosInstance.get(`/sessions/${selectedSession}/terms/`);
+        const res = await axiosInstance.get(`/sessions/${selectedSession}/terms/`, { headers });
         setTerms(res.data);
         // Reset selected term when session changes
         setSelectedTerm('')
@@ -95,25 +103,28 @@ const StudentResults = () => {
     try {
       // Use axiosInstance and relative paths
       const [studentRes, classRes, effectiveRes, psychomotorRes, summaryRes] = await Promise.all([
-        axiosInstance.get(`/students/${selectedStudent}/`),
-        axiosInstance.get(`/students/${selectedStudent}/class/`),
+        axiosInstance.get(`/students/${selectedStudent}/`, { headers }),
+        axiosInstance.get(`/students/${selectedStudent}/class/`, { headers }),
         axiosInstance.get('/effective-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
-          }
+          },
+          headers
         }),
         axiosInstance.get('/psychomotive-domains/', {
           params: {
             student_id: selectedStudent,
             term_id: selectedTerm
-          }
+          },
+          headers
         }),
         axiosInstance.get('/result-summaries/', {
           params: {
             student: selectedStudent,
             term: selectedTerm
-          }
+          },
+          headers
         })
       ])
       
@@ -139,13 +150,14 @@ const StudentResults = () => {
         params: {
           student_id: selectedStudent,
           term_id: selectedTerm
-        }
+        },
+        headers
       })
       setResults(scoresRes.data);
       
       // Get detailed term info including session
       // Use axiosInstance and relative path
-      const termRes = await axiosInstance.get(`/terms/${selectedTerm}/`);
+      const termRes = await axiosInstance.get(`/terms/${selectedTerm}/`, { headers });
       console.log('Term details:', termRes.data);
       
       // Set session info from the term details
@@ -154,7 +166,7 @@ const StudentResults = () => {
       } else if (termRes.data.session) {
         try {
           // Use axiosInstance and relative path
-          const sessionRes = await axiosInstance.get(`/sessions/${termRes.data.session}/`);
+          const sessionRes = await axiosInstance.get(`/sessions/${termRes.data.session}/`, { headers });
           setSessionInfo(sessionRes.data);
         } catch (error) {
           console.error('Error fetching session:', error);
@@ -172,7 +184,7 @@ const StudentResults = () => {
   const selectedTermData = terms.find(t => t.id == selectedTerm) || {}
 
   return (
-    <div className="min-h-[297mm] w-[210mm] mx-auto bg-white print:p-[15mm] p-4 font-serif text-[12pt] leading-tight relative">
+    <div className="min-h-[297mm] w-[210mm] mx-auto bg-white print:p-[5mm] p-4 font-serif text-[10pt] leading-tight relative">
       <ToastContainer className="print:hidden" />
       
       {/* Controls */}
@@ -298,7 +310,7 @@ const StudentResults = () => {
           {/* Main Results Grid */}
           <div className="flex gap-2">
             {/* Subject Scores Table - Left Side */}
-            <div className="w-[65%] border border-black">
+            <div className="w-[65%] border border-black overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                     <tr className="bg-gray-50">
@@ -422,40 +434,44 @@ const StudentResults = () => {
           <div className="mt-4 space-y-2">
             {/* Attendance and Performance Tables */}
             <table className="w-full border-collapse border border-black">
-              <tr>
-                <th className="border border-black p-1.5 text-left text-[10pt] w-1/2">Number of Times Present in School:</th>
-                <td className="border border-black p-1.5 text-[10pt]">{studentInfo.days_present || 'N/A'}</td>
-                <th className="border border-black p-1.5 text-left text-[10pt] w-1/2">Number of Times School Opened:</th>
-                <td className="border border-black p-1.5 text-[10pt]">{studentInfo.school_days || 'N/A'}</td>
-              </tr>
-              <tr>
-                <th className="border border-black p-1.5 text-left text-[10pt]" colSpan="2">Percentage Attendance (%):</th>
-                <td className="border border-black p-1.5 text-[10pt]" colSpan="2">
-                  {studentInfo.days_present && studentInfo.school_days
-                    ? ((studentInfo.days_present / studentInfo.school_days) * 100).toFixed(2)
-                    : 'N/A'}
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <th className="border border-black p-1.5 text-left text-[10pt] w-1/2">Number of Times Present in School:</th>
+                  <td className="border border-black p-1.5 text-[10pt]">{studentInfo.days_present || 'N/A'}</td>
+                  <th className="border border-black p-1.5 text-left text-[10pt] w-1/2">Number of Times School Opened:</th>
+                  <td className="border border-black p-1.5 text-[10pt]">{studentInfo.school_days || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <th className="border border-black p-1.5 text-left text-[10pt]" colSpan="2">Percentage Attendance (%):</th>
+                  <td className="border border-black p-1.5 text-[10pt]" colSpan="2">
+                    {studentInfo.days_present && studentInfo.school_days
+                      ? ((studentInfo.days_present / studentInfo.school_days) * 100).toFixed(2)
+                      : 'N/A'}
+                  </td>
+                </tr>
+              </tbody>
             </table>
 
             {/* Performance Summary Table */}
             <table className="w-full border-collapse border border-black">
-              <tr>
-                <td className="border border-black p-1.5 text-[10pt]"><strong>Terminal total score:</strong></td>
-                <td className="border border-black p-1.5 text-[10pt]">{resultSummary?.total_score || 0}</td>
-                <td className="border border-black p-1.5 text-[10pt]"><strong>Out of:</strong></td>
-                <td className="border border-black p-1.5 text-[10pt]">{(resultSummary?.number_of_subjects || 0) * 100}</td>
-              </tr>
-              <tr>
-                <td className="border border-black p-1.5 text-[10pt]"><strong>Average Score:</strong></td>
-                <td className="border border-black p-1.5 text-[10pt]" colSpan="3">{resultSummary?.average_score || 0}%</td>
-              </tr>
-              <tr>
-                <td className="border border-black p-1.5 text-[10pt]"><strong>Last Term Average:</strong></td>
-                <td className="border border-black p-1.5 text-[10pt]">{studentInfo.last_term_average || 'N/A'}</td>
-                <td className="border border-black p-1.5 text-[10pt]"><strong>Current Term Average:</strong></td>
-                <td className="border border-black p-1.5 text-[10pt]">{resultSummary?.average_score || 0}%</td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td className="border border-black p-1.5 text-[10pt]"><strong>Terminal total score:</strong></td>
+                  <td className="border border-black p-1.5 text-[10pt]">{resultSummary?.total_score || 0}</td>
+                  <td className="border border-black p-1.5 text-[10pt]"><strong>Out of:</strong></td>
+                  <td className="border border-black p-1.5 text-[10pt]">{(resultSummary?.number_of_subjects || 0) * 100}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black p-1.5 text-[10pt]"><strong>Average Score:</strong></td>
+                  <td className="border border-black p-1.5 text-[10pt]" colSpan="3">{resultSummary?.average_score || 0}%</td>
+                </tr>
+                <tr>
+                  <td className="border border-black p-1.5 text-[10pt]"><strong>Last Term Average:</strong></td>
+                  <td className="border border-black p-1.5 text-[10pt]">{studentInfo.last_term_average || 'N/A'}</td>
+                  <td className="border border-black p-1.5 text-[10pt]"><strong>Current Term Average:</strong></td>
+                  <td className="border border-black p-1.5 text-[10pt]">{resultSummary?.average_score || 0}%</td>
+                </tr>
+              </tbody>
             </table>
 
             {/* Grade Scale and Signature Section */}

@@ -9,7 +9,7 @@ export default function EnrollStudents() {
   const [classes, setClasses] = useState([])
   const [terms, setTerms] = useState([])
   const [sessions, setSessions] = useState([])
-
+ 
   // Individual form fields
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -43,11 +43,19 @@ export default function EnrollStudents() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Ensure all API calls include the Authorization header with the token
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          toast.error('Access token is missing. Please log in again.');
+          return;
+        }
+        const headers = { Authorization: `Bearer ${token}` };
+
         // Use axiosInstance and relative paths
         const [classRes, termRes, sessionRes] = await Promise.all([
-          axiosInstance.get('/classes/'),
-          axiosInstance.get('/terms/'),
-          axiosInstance.get('/sessions/')
+          axiosInstance.get('/classes/', { headers }),
+          axiosInstance.get('/terms/', { headers }),
+          axiosInstance.get('/sessions/', { headers })
         ]);
         setClasses(classRes.data);
         setTerms(termRes.data)
@@ -63,7 +71,15 @@ export default function EnrollStudents() {
   // Fetch enrolled students
   const fetchEnrolledStudents = async () => {
     try {
-      const res = await axiosInstance.get('/enrollments/'); // Use axiosInstance and relative path
+      // Ensure all API calls include the Authorization header with the token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axiosInstance.get('/enrollments/', { headers }); // Use axiosInstance and relative path
       setEnrolledStudents(res.data);
     } catch (err) {
       toast.error('Failed to fetch enrolled students')
@@ -88,9 +104,17 @@ export default function EnrollStudents() {
 
     try {
       setLoading(true);
+      // Ensure all API calls include the Authorization header with the token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       // Use axiosInstance and relative path, interceptor handles token, but keep Content-Type for FormData
       await axiosInstance.post('/enrollments/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Student enrolled successfully!');
       setFirstName('')
@@ -204,10 +228,19 @@ export default function EnrollStudents() {
           formData.append(`students[${index}][picture]`, entry.picture)
         }
       });
-  
+
+      // Ensure all API calls include the Authorization header with the token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       // Use axiosInstance and relative path, keep Content-Type for FormData
       await axiosInstance.post('/bulk/enrollments/', formData, {
         headers: {
+          ...headers,
           'Content-Type': 'multipart/form-data'
         }
       })
@@ -254,9 +287,17 @@ export default function EnrollStudents() {
         }
       });
 
+      // Ensure all API calls include the Authorization header with the token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       // Use axiosInstance and relative path, keep Content-Type for FormData
       await axiosInstance.put(`/enrollments/${editingStudent.id}/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Student updated successfully!');
       setEditModalOpen(false)
@@ -271,8 +312,16 @@ export default function EnrollStudents() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this enrollment?')) return;
     try {
+      // Ensure all API calls include the Authorization header with the token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+
       // Use axiosInstance and relative path
-      await axiosInstance.delete(`/enrollments/${id}/`);
+      await axiosInstance.delete(`/enrollments/${id}/`, { headers });
       toast.success('Enrollment deleted successfully!');
       fetchEnrolledStudents();
     } catch (err) {
@@ -291,9 +340,9 @@ export default function EnrollStudents() {
   }, [picturePreview, editingStudent])
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Enroll Students</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Enroll Students</h2>
 
       <div className="mb-4 flex gap-4">
         <button
@@ -312,25 +361,46 @@ export default function EnrollStudents() {
 
       {activeTab === 'individual' && (
         <form onSubmit={handleIndividualSubmit} className="space-y-4">
-          <div className="flex flex-wrap gap-4">
-            <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="border px-4 py-2 rounded w-64" required />
-            <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="border px-4 py-2 rounded w-64" required />
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="border px-4 py-2 rounded w-64" required />
-            <select value={studentClass} onChange={(e) => setStudentClass(e.target.value)} className="border px-4 py-2 rounded w-64" required>
-              <option value="">Select Class</option>
-              {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
-            </select>
-            <select value={term} onChange={(e) => setTerm(e.target.value)} className="border px-4 py-2 rounded w-64" required>
-              <option value="">Select Term</option>
-              {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
-            </select>
-            <select value={session} onChange={(e) => setSession(e.target.value)} className="border px-4 py-2 rounded w-64" required>
-              <option value="">Select Session</option>
-              {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
-            </select>
-            <input type="file" onChange={handlePictureChange} className="w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">First Name</label>
+              <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="border px-4 py-2 rounded w-full" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Last Name</label>
+              <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="border px-4 py-2 rounded w-full" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="border px-4 py-2 rounded w-full" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Class</label>
+              <select value={studentClass} onChange={(e) => setStudentClass(e.target.value)} className="border px-4 py-2 rounded w-full" required>
+                <option value="">Select Class</option>
+                {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Term</label>
+              <select value={term} onChange={(e) => setTerm(e.target.value)} className="border px-4 py-2 rounded w-full" required>
+                <option value="">Select Term</option>
+                {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Session</label>
+              <select value={session} onChange={(e) => setSession(e.target.value)} className="border px-4 py-2 rounded w-full" required>
+                <option value="">Select Session</option>
+                {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Picture</label>
+              <input type="file" onChange={handlePictureChange} className="w-full" />
+            </div>
           </div>
-          <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+          <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full md:w-auto">
             {loading ? 'Submitting...' : 'Enroll Student'}
           </button>
         </form>
@@ -339,31 +409,52 @@ export default function EnrollStudents() {
       {activeTab === 'bulk' && (
         <form onSubmit={handleBulkSubmit} className="space-y-4">
           {bulkEntries.map((entry, index) => (
-            <div key={index} className="flex gap-2 flex-wrap border p-4 rounded mb-2 bg-gray-50">
-                <input type="text" placeholder="First Name" value={entry.firstname} onChange={(e) => handleBulkChange(index, 'firstname', e.target.value)} className="border px-2 py-1 rounded w-48" required />
-                <input type="text" placeholder="Last Name" value={entry.lastname} onChange={(e) => handleBulkChange(index, 'lastname', e.target.value)} className="border px-2 py-1 rounded w-48" required />
-                <input type="email" placeholder="Email" value={entry.email} onChange={(e) => handleBulkChange(index, 'email', e.target.value)} className="border px-2 py-1 rounded w-64" required />
-                <select value={entry.student_class} onChange={(e) => handleBulkChange(index, 'student_class', e.target.value)} className="border px-2 py-1 rounded w-40" required>
-                <option value="">Class</option>
-                {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded mb-2 bg-gray-50">
+              <div>
+                <label className="block text-sm font-medium mb-1">First Name</label>
+                <input type="text" placeholder="First Name" value={entry.firstname} onChange={(e) => handleBulkChange(index, 'firstname', e.target.value)} className="border px-2 py-1 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Last Name</label>
+                <input type="text" placeholder="Last Name" value={entry.lastname} onChange={(e) => handleBulkChange(index, 'lastname', e.target.value)} className="border px-2 py-1 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input type="email" placeholder="Email" value={entry.email} onChange={(e) => handleBulkChange(index, 'email', e.target.value)} className="border px-2 py-1 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Class</label>
+                <select value={entry.student_class} onChange={(e) => handleBulkChange(index, 'student_class', e.target.value)} className="border px-2 py-1 rounded w-full" required>
+                  <option value="">Class</option>
+                  {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
                 </select>
-                <select value={entry.term} onChange={(e) => handleBulkChange(index, 'term', e.target.value)} className="border px-2 py-1 rounded w-40" required>
-                <option value="">Term</option>
-                {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Term</label>
+                <select value={entry.term} onChange={(e) => handleBulkChange(index, 'term', e.target.value)} className="border px-2 py-1 rounded w-full" required>
+                  <option value="">Term</option>
+                  {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
                 </select>
-                <select value={entry.session} onChange={(e) => handleBulkChange(index, 'session', e.target.value)} className="border px-2 py-1 rounded w-40" required>
-                <option value="">Session</option>
-                {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Session</label>
+                <select value={entry.session} onChange={(e) => handleBulkChange(index, 'session', e.target.value)} className="border px-2 py-1 rounded w-full" required>
+                  <option value="">Session</option>
+                  {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Picture</label>
                 <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleBulkChange(index, 'picture', e.target.files[0])}
-                className="border px-2 py-1 rounded w-60"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleBulkChange(index, 'picture', e.target.files[0])}
+                  className="border px-2 py-1 rounded w-full"
                 />
-                <button type="button" onClick={() => removeBulkEntry(index)} className="text-red-600">Remove</button>
+              </div>
+              <button type="button" onClick={() => removeBulkEntry(index)} className="text-red-600">Remove</button>
             </div>
-            ))}
+          ))}
 
           <div className="flex gap-2">
             <button type="button" onClick={addBulkEntry} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
@@ -418,30 +509,51 @@ export default function EnrollStudents() {
           <div className="bg-white p-6 rounded shadow-lg">
             <h2 className="text-xl font-bold mb-4">Edit Student</h2>
             <form onSubmit={handleUpdate} className="space-y-4">
-              <input type="text" placeholder="First Name" value={editFormData.firstname} onChange={(e) => setEditFormData({ ...editFormData, firstname: e.target.value })} className="border px-4 py-2 rounded w-full" required />
-              <input type="text" placeholder="Last Name" value={editFormData.lastname} onChange={(e) => setEditFormData({ ...editFormData, lastname: e.target.value })} className="border px-4 py-2 rounded w-full" required />
-              <input type="email" placeholder="Email" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="border px-4 py-2 rounded w-full" required />
-              <select value={editFormData.student_class} onChange={(e) => setEditFormData({ ...editFormData, student_class: e.target.value })} className="border px-4 py-2 rounded w-full" required>
-                <option value="">Select Class</option>
-                {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
-              </select>
-              <select value={editFormData.term} onChange={(e) => setEditFormData({ ...editFormData, term: e.target.value })} className="border px-4 py-2 rounded w-full" required>
-                <option value="">Select Term</option>
-                {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
-              </select>
-              <select value={editFormData.session} onChange={(e) => setEditFormData({ ...editFormData, session: e.target.value })} className="border px-4 py-2 rounded w-full" required>
-                <option value="">Select Session</option>
-                {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
-              </select>
-              <input type="file" accept="image/*" onChange={handleEditPictureChange} className="border px-4 py-2 rounded w-full" />
+              <div>
+                <label className="block text-sm font-medium mb-1">First Name</label>
+                <input type="text" placeholder="First Name" value={editFormData.firstname} onChange={(e) => setEditFormData({ ...editFormData, firstname: e.target.value })} className="border px-4 py-2 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Last Name</label>
+                <input type="text" placeholder="Last Name" value={editFormData.lastname} onChange={(e) => setEditFormData({ ...editFormData, lastname: e.target.value })} className="border px-4 py-2 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input type="email" placeholder="Email" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="border px-4 py-2 rounded w-full" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Class</label>
+                <select value={editFormData.student_class} onChange={(e) => setEditFormData({ ...editFormData, student_class: e.target.value })} className="border px-4 py-2 rounded w-full" required>
+                  <option value="">Select Class</option>
+                  {classes.map(cls => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Term</label>
+                <select value={editFormData.term} onChange={(e) => setEditFormData({ ...editFormData, term: e.target.value })} className="border px-4 py-2 rounded w-full" required>
+                  <option value="">Select Term</option>
+                  {terms.map(term => <option key={term.id} value={term.id}>{term.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Session</label>
+                <select value={editFormData.session} onChange={(e) => setEditFormData({ ...editFormData, session: e.target.value })} className="border px-4 py-2 rounded w-full" required>
+                  <option value="">Select Session</option>
+                  {sessions.map(sess => <option key={sess.id} value={sess.id}>{sess.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Picture</label>
+                <input type="file" accept="image/*" onChange={handleEditPictureChange} className="border px-4 py-2 rounded w-full" />
+              </div>
               {picturePreview && (
                 <div className="flex items-center gap-4">
                   <img src={picturePreview} alt="Preview" className="w-32 h-32 object-cover rounded-full mt-2" />
                   <button type="button" onClick={handleRemovePicture} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Remove Picture</button>
                 </div>
               )}
-              <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Update Student</button>
-              <button type="button" onClick={() => setEditModalOpen(false)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 ml-2">Cancel</button>
+              <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full md:w-auto">Update Student</button>
+              <button type="button" onClick={() => setEditModalOpen(false)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 ml-2 w-full md:w-auto">Cancel</button>
             </form>
           </div>
         </div>

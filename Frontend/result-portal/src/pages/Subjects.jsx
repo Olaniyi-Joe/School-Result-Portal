@@ -19,9 +19,17 @@ export default function Subjects() {
   const [editingName, setEditingName] = useState('')
   const [editingClassId, setEditingClassId] = useState('')
 
+  // Ensure all API calls include the Authorization header with the token
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    toast.error('Access token is missing. Please log in again.');
+    return;
+  }
+  const headers = { Authorization: `Bearer ${token}` };
+
   const fetchSubjects = async () => {
     try {
-      const res = await axiosInstance.get('/subjects/'); // Use axiosInstance and relative path
+      const res = await axiosInstance.get('/subjects/', { headers }); // Use axiosInstance and relative path
       setSubjects(res.data);
     } catch (err) {
       toast.error('Failed to fetch subjects')
@@ -31,7 +39,7 @@ export default function Subjects() {
 
   const fetchClasses = async () => {
     try {
-      const res = await axiosInstance.get('/classes/'); // Use axiosInstance and relative path
+      const res = await axiosInstance.get('/classes/', { headers }); // Use axiosInstance and relative path
       setClasses(res.data);
     } catch (err) {
       toast.error('Failed to fetch classes')
@@ -52,7 +60,7 @@ export default function Subjects() {
       await axiosInstance.post('/subjects/', {
         name,
         class_group: classId,
-      })
+      }, { headers })
       setName('')
       setClassId('')
       toast.success('Subject added successfully!')
@@ -84,14 +92,14 @@ export default function Subjects() {
       toast.error('Please enter at least one subject name')
       return
     }
-
+ 
     setBulkLoading(true);
     try {
       // Use axiosInstance and relative path
       await axiosInstance.post('/bulk-create/subjects/', {
         subjects: names,
         class_group_id: classId,
-      })
+      }, { headers })
       toast.success('Bulk subjects added!')
       setBulkSubjects('')
       fetchSubjects()
@@ -120,7 +128,7 @@ export default function Subjects() {
       await axiosInstance.put(`/subjects/${editingSubject.id}/`, {
         name: editingName,
         class_group: editingClassId,
-      })
+      }, { headers })
       toast.success('Subject updated successfully!')
       setEditModalOpen(false)
       fetchSubjects()
@@ -134,7 +142,7 @@ export default function Subjects() {
     if (!window.confirm('Are you sure you want to delete this subject?')) return;
     try {
       // Use axiosInstance and relative path
-      await axiosInstance.delete(`/subjects/${id}/`);
+      await axiosInstance.delete(`/subjects/${id}/`, { headers });
       toast.success('Subject deleted successfully!');
       fetchSubjects();
     } catch (err) {
@@ -144,9 +152,9 @@ export default function Subjects() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Manage Subjects</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Manage Subjects</h2>
 
       <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4 items-center">
         <input
@@ -197,16 +205,17 @@ export default function Subjects() {
         </button>
       </form>
 
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {subjects.map((subject) => (
-          <li
+          <div
             key={subject.id}
-            className="border-b py-2 flex justify-between items-center text-gray-800"
+            className="border rounded p-4 bg-white shadow-md flex justify-between items-center text-gray-800"
           >
             <div>
-              {subject.name} — Class: {classes.find((c) => c.id === subject.class_group)?.name || 'Unknown'}
+              <h2 className="text-lg font-semibold">{subject.name}</h2>
+              <p className="text-gray-600">Class: {classes.find((c) => c.id === subject.class_group)?.name || 'Unknown'}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2">                    
               <button
                 onClick={() => openEditModal(subject)}
                 className="text-blue-600 hover:underline"
@@ -220,9 +229,9 @@ export default function Subjects() {
                 Delete
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       <Modal
         isOpen={editModalOpen}

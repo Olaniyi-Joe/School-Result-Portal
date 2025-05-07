@@ -1,8 +1,20 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import SessionViewSet, TermViewSet, terms_by_session, ClassViewSet, SubjectViewSet, subjects_by_class, StudentViewSet, EnrollmentViewSet, BulkStudentEnrollmentView, students_by_subject_in_class, input_scores, student_scores, filter_scores, bulk_create_subjects, student_class, student_detail, EffectiveDomainViewSet, PsychomotiveDomainViewSet, SchoolViewSet, CommentsTemplateViewSet, ResultSummaryViewSet, student_result_history, class_rankings
+from rest_framework_simplejwt.views import TokenRefreshView
+from authentication.views import RegisterUserView
+from .views import (
+    SessionViewSet, TermViewSet, terms_by_session, ClassViewSet, SubjectViewSet,
+    subjects_by_class, StudentViewSet, EnrollmentViewSet, BulkStudentEnrollmentView,
+    students_by_subject_in_class, input_scores, student_scores, filter_scores,
+    bulk_create_subjects, student_class, student_detail, EffectiveDomainViewSet,
+    PsychomotiveDomainViewSet, SchoolViewSet, CommentsTemplateViewSet,
+    ResultSummaryViewSet, student_result_history, class_rankings
+)
 
 router = DefaultRouter()
+
+
+# Existing routes
 router.register(r'sessions', SessionViewSet)
 router.register(r'terms', TermViewSet)
 router.register(r'classes', ClassViewSet)
@@ -16,6 +28,8 @@ router.register(r'comments-templates', CommentsTemplateViewSet)
 router.register(r'result-summaries', ResultSummaryViewSet)
 
 urlpatterns = [
+    
+    # paths
     path('', include(router.urls)),
     path('sessions/<int:session_id>/terms/', terms_by_session, name="terms_by_session"),
     path('classes/<int:class_id>/subjects/', subjects_by_class, name='subjects_by_class'),

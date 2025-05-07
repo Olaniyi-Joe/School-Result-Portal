@@ -20,25 +20,41 @@ export default function Terms() {
 
   const fetchTerms = async () => {
     try {
-      // Use axiosInstance and relative path
-      const res = await axiosInstance.get('/terms/');
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      const res = await axiosInstance.get('/terms/', { headers });
       setTerms(res.data);
     } catch (err) {
-      toast.error('Failed to fetch terms')
-      console.error(err)
+      toast.error('Failed to fetch terms');
+      console.error(err);
     }
-  }
+  };
 
   const fetchSessions = async () => {
     try {
-      // Use axiosInstance and relative path
-      const res = await axiosInstance.get('/sessions/');
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+      const res = await axiosInstance.get('/sessions/', { headers });
       setSessions(res.data);
     } catch (err) {
-      toast.error('Failed to fetch sessions')
-      console.error(err)
+      toast.error('Failed to fetch sessions');
+      console.error(err);
     }
-  }
+  };
 
   useEffect(() => {
     fetchTerms()
@@ -46,25 +62,40 @@ export default function Terms() {
   }, [])
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     setLoading(true);
     try {
-      // Use axiosInstance and relative path
-      await axiosInstance.post('/terms/', {
-        name,
-        session: sessionId,
-      })
-      setName('')
-      setSessionId('')
-      toast.success('Term added successfully!')
-      fetchTerms()
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      await axiosInstance.post(
+        '/terms/',
+        { name, session: sessionId }, // Payload
+        { headers } // Headers passed as a separate config object
+      );
+
+      setName('');
+      setSessionId('');
+      toast.success('Term added successfully!');
+      fetchTerms();
     } catch (err) {
-      toast.error('Failed to create term')
-      console.error(err)
+      if (err.response?.status === 401) {
+        toast.error('Unauthorized: Please check your token or log in again.');
+      } else {
+        toast.error('Failed to create term');
+      }
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const openEditModal = (term) => {
     setEditingTerm(term)
@@ -75,7 +106,15 @@ export default function Terms() {
 
   const handleUpdate = async () => {
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       await axiosInstance.patch(`/terms/${editingTerm.id}/`, {
         name: editingName,
         session: editingSessionId,
@@ -92,7 +131,15 @@ export default function Terms() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this term?')) return;
     try {
-      // Use axiosInstance and relative path
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Access token is missing. Please log in again.');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
       await axiosInstance.delete(`/terms/${id}/`);
       toast.success('Term deleted successfully!');
       fetchTerms();
@@ -103,9 +150,9 @@ export default function Terms() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Manage Terms</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Manage Terms</h2>
 
       <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4 items-center">
         <input
@@ -138,16 +185,12 @@ export default function Terms() {
         </button>
       </form>
 
-      <ul className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {terms.map((term) => (
-          <li
-            key={term.id}
-            className="border-b py-2 flex justify-between items-center text-gray-800"
-          >
-            <div>
-              {term.name} — Session: {sessions.find((s) => s.id === term.session)?.name || 'Unknown'}
-            </div>
-            <div className="flex gap-2">
+          <div key={term.id} className="border rounded p-4 bg-white shadow-md">
+            <h2 className="text-lg font-semibold">{term.name}</h2>
+            <p className="text-gray-600">Session: {sessions.find((s) => s.id === term.session)?.name || 'Unknown'}</p>
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={() => openEditModal(term)}
                 className="text-blue-600 hover:underline"
@@ -161,9 +204,9 @@ export default function Terms() {
                 Delete
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       <Modal
         isOpen={editModalOpen}
