@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance'; // Import the configured instance
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Sidebar from '../components/Sidebar';
 
 export default function EnterScores() {
   const [classes, setClasses] = useState([])
@@ -228,120 +229,125 @@ export default function EnterScores() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Enter Student Scores</h2>
-      
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <select 
-          value={selectedClass} 
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="border px-4 py-2 rounded w-full"
-        >
-          <option value="">Select Class</option>
-          {classes.map(cls => (
-            <option key={cls.id} value={cls.id}>{cls.name}</option>
-          ))}
-        </select>
-        
-        <select 
-          value={selectedSubject} 
-          onChange={(e) => setSelectedSubject(e.target.value)}
-          className="border px-4 py-2 rounded w-full"
-          disabled={!selectedClass}
-        >
-          <option value="">Select Subject</option>
-          {subjects.map(subject => (
-            <option key={subject.id} value={subject.id}>{subject.name}</option>
-          ))}
-        </select>
-        
-        <select 
-          value={selectedTerm} 
-          onChange={(e) => setSelectedTerm(e.target.value)}
-          className="border px-4 py-2 rounded w-full"
-        >
-          <option value="">Select Term</option>
-          {terms.map(term => (
-            <option key={term.id} value={term.id}>{term.name}</option>
-          ))}
-        </select>
-        
-        <button 
-          onClick={handleFetchStudents} 
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
-          disabled={loading || !selectedClass || !selectedSubject || !selectedTerm}
-        >
-          {loading ? 'Loading...' : dataFetched ? 'Refresh Data' : 'Load Students'}
-        </button>
-      </div>
-      
-      {studentScores.length > 0 ? (
-        <div>
-          <div className="overflow-x-auto mb-4">
-            <table className="min-w-full bg-white border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-2 px-4 border text-left">Student</th>
-                  <th className="py-2 px-4 border text-center">CA Score</th>
-                  <th className="py-2 px-4 border text-center">Exam Score</th>
-                  <th className="py-2 px-4 border text-center">Total</th>
-                  <th className="py-2 px-4 border text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {studentScores.map((student, index) => (
-                  <tr key={student.student_id} className={student.has_existing_score ? "bg-blue-50" : ""}>
-                    <td className="py-2 px-4 border">{student.student_name}</td>
-                    <td className="py-2 px-4 border text-center">
-                      <input 
-                        type="number" 
-                        min="0" 
-                        max="30" 
-                        value={student.ca_score} 
-                        onChange={(e) => handleScoreChange(index, 'ca_score', e.target.value)}
-                        className="border rounded px-2 py-1 w-16 text-center"
-                      />
-                    </td>
-                    <td className="py-2 px-4 border text-center">
-                      <input 
-                        type="number" 
-                        min="0" 
-                        max="70" 
-                        value={student.exam_score} 
-                        onChange={(e) => handleScoreChange(index, 'exam_score', e.target.value)}
-                        className="border rounded px-2 py-1 w-16 text-center"
-                      />
-                    </td>
-                    <td className="py-2 px-4 border text-center">
-                      {/* Ensure values are treated as numbers */}
-                      {(Number(student.ca_score || 0) + Number(student.exam_score || 0)).toFixed(1)}
-                    </td>
-                    <td className="py-2 px-4 border text-center">
-                      {student.has_existing_score ? 
-                        <span className="text-blue-600 text-sm">Existing Score</span> : 
-                        <span className="text-gray-500 text-sm">New</span>
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="flex flex-col md:flex-row">
+      <Sidebar className="hidden md:block fixed top-0 left-0 h-full w-64" />
+      <main className="flex-1 p-4 md:ml-64">
+        <div className="p-6 max-w-7xl mx-auto">
+          <ToastContainer />
+          <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Enter Student Scores</h2>
+          
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <select 
+              value={selectedClass} 
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="border px-4 py-2 rounded w-full"
+            >
+              <option value="">Select Class</option>
+              {classes.map(cls => (
+                <option key={cls.id} value={cls.id}>{cls.name}</option>
+              ))}
+            </select>
+            
+            <select 
+              value={selectedSubject} 
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="border px-4 py-2 rounded w-full"
+              disabled={!selectedClass}
+            >
+              <option value="">Select Subject</option>
+              {subjects.map(subject => (
+                <option key={subject.id} value={subject.id}>{subject.name}</option>
+              ))}
+            </select>
+            
+            <select 
+              value={selectedTerm} 
+              onChange={(e) => setSelectedTerm(e.target.value)}
+              className="border px-4 py-2 rounded w-full"
+            >
+              <option value="">Select Term</option>
+              {terms.map(term => (
+                <option key={term.id} value={term.id}>{term.name}</option>
+              ))}
+            </select>
+            
+            <button 
+              onClick={handleFetchStudents} 
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
+              disabled={loading || !selectedClass || !selectedSubject || !selectedTerm}
+            >
+              {loading ? 'Loading...' : dataFetched ? 'Refresh Data' : 'Load Students'}
+            </button>
           </div>
           
-          <button 
-            onClick={handleSubmitScores} 
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full md:w-auto"
-            disabled={submitting}
-          >
-            {submitting ? 'Submitting...' : 'Save Scores'}
-          </button>
+          {studentScores.length > 0 ? (
+            <div>
+              <div className="overflow-x-auto mb-4">
+                <table className="min-w-full bg-white border">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="py-2 px-4 border text-left">Student</th>
+                      <th className="py-2 px-4 border text-center">CA Score</th>
+                      <th className="py-2 px-4 border text-center">Exam Score</th>
+                      <th className="py-2 px-4 border text-center">Total</th>
+                      <th className="py-2 px-4 border text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentScores.map((student, index) => (
+                      <tr key={student.student_id} className={student.has_existing_score ? "bg-blue-50" : ""}>
+                        <td className="py-2 px-4 border">{student.student_name}</td>
+                        <td className="py-2 px-4 border text-center">
+                          <input 
+                            type="number" 
+                            min="0" 
+                            max="30" 
+                            value={student.ca_score} 
+                            onChange={(e) => handleScoreChange(index, 'ca_score', e.target.value)}
+                            className="border rounded px-2 py-1 w-16 text-center"
+                          />
+                        </td>
+                        <td className="py-2 px-4 border text-center">
+                          <input 
+                            type="number" 
+                            min="0" 
+                            max="70" 
+                            value={student.exam_score} 
+                            onChange={(e) => handleScoreChange(index, 'exam_score', e.target.value)}
+                            className="border rounded px-2 py-1 w-16 text-center"
+                          />
+                        </td>
+                        <td className="py-2 px-4 border text-center">
+                          {/* Ensure values are treated as numbers */}
+                          {(Number(student.ca_score || 0) + Number(student.exam_score || 0)).toFixed(1)}
+                        </td>
+                        <td className="py-2 px-4 border text-center">
+                          {student.has_existing_score ? 
+                            <span className="text-blue-600 text-sm">Existing Score</span> : 
+                            <span className="text-gray-500 text-sm">New</span>
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <button 
+                onClick={handleSubmitScores} 
+                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full md:w-auto"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Save Scores'}
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              {loading ? 'Loading students...' : 'No students to display. Select filters and click "Load Students"'}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="text-center py-8 text-gray-500">
-          {loading ? 'Loading students...' : 'No students to display. Select filters and click "Load Students"'}
-        </div>
-      )}
+      </main>
     </div>
   )
 }

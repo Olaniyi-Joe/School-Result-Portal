@@ -6,9 +6,15 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+from rest_framework.parsers import MultiPartParser, FormParser
+import pandas as pd
 from .permissions import IsSuperAdmin, IsSchoolAdmin, IsTeacher, IsParent
 from .models import Term, Session, Class, Subject, Student, Enrollment, Score, EffectiveDomain, PsychomotiveDomain, School, CommentsTemplate, ResultSummary
 from .serializers import TermSerializer, SessionSerializer, ClassSerializer, SubjectSerializer, StudentSerializer, EnrollmentSerializer, BulkStudentEnrollmentSerializer, ScoreSerializer, ScoreInputSerializer, EffectiveDomainSerializer, PsychomotiveDomainSerializer, SchoolSerializer, CommentsTemplateSerializer, ResultSummarySerializer
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -109,17 +115,37 @@ def bulk_create_subjects(request):
 def subjects_by_class(request, class_id):
     try:
         class_instance = Class.objects.get(id=class_id)
+        subjects = Subject.objects.filter(class_group=class_instance)
+        serializer = SubjectSerializer(subjects, many=True)
+        return Response(serializer.data)
     except Class.DoesNotExist:
-        return Response({"detail": "Class not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    subjects = Subject.objects.filter(class_group=class_instance)
-    serializer = SubjectSerializer(subjects, many=True)
-    return Response(serializer.data)
+        return Response({"error": "Class not found"}, status=404)
 
 class StudentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        parent_name = data.get('parent_name')
+        if parent_name:
+            data['parent_name'] = parent_name
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        data = request.data
+        parent_name = data.get('parent_name')
+        if parent_name:
+            data['parent_name'] = parent_name
+        return super().update(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        class_id = self.request.query_params.get('class')
+        if class_id:
+            queryset = queryset.filter(enrollments__student_class_id=class_id)
+        return queryset
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -133,7 +159,10 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
             "lastname": request.data.get('lastname'),
             "othername": request.data.get('othername', ""),
             "email": request.data.get('email'),
-            "picture": request.data.get('picture')
+            "picture": request.data.get('picture'),
+            "registration_number": request.data.get('registration_number'),
+            "days_present": request.data.get('days_present'),
+            "parent_name": request.data.get('parent_name')
         }
         # Create the student
         student_serializer = StudentSerializer(data=student_data)
@@ -168,20 +197,22 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
             if student.picture:
                 student.picture.delete()  # This will delete the file
                 student.picture = None
-                student.save()
 
         # Update student info
         student_data = {
             'firstname': request.data.get('firstname', student.firstname),
             'lastname': request.data.get('lastname', student.lastname),
             'email': request.data.get('email', student.email),
+            'registration_number': request.data.get('registration_number', student.registration_number),
+            'days_present': request.data.get('days_present', student.days_present),
+            'parent_name': request.data.get('parent_name', student.parent_name),
         }
-        
+
         # Handle new picture upload
         if 'picture' in request.FILES:
             student_data['picture'] = request.FILES['picture']
 
-        student_serializer = StudentSerializer(student, data=student_data)
+        student_serializer = StudentSerializer(student, data=student_data, partial=True)
         student_serializer.is_valid(raise_exception=True)
         student_serializer.save()
 
@@ -192,11 +223,14 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
             'session': request.data.get('session', enrollment.session.id)
         }
 
-        serializer = self.get_serializer(enrollment, data=enrollment_data)
+        serializer = self.get_serializer(enrollment, data=enrollment_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data)
+        return Response({
+            "student": student_serializer.data,
+            "enrollment": serializer.data
+        })
 
 class BulkStudentEnrollmentView(APIView):
     permission_classes = [IsAuthenticated]
@@ -234,6 +268,78 @@ class BulkStudentEnrollmentView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class BulkEnrollmentFromFileView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get class_id, term_id, and session_id from request parameters
+        class_id = request.data.get('class_id')
+        term_id = request.data.get('term_id')
+        session_id = request.data.get('session_id')
+
+        if not class_id or not term_id or not session_id:
+            return Response({"error": "class_id, term_id, and session_id are required parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Determine file type and read content
+            if file.name.endswith('.csv'):
+                data = pd.read_csv(file)
+            elif file.name.endswith(('.xls', '.xlsx')):
+                data = pd.read_excel(file)
+            else:
+                return Response({"error": "Unsupported file format. Use CSV or Excel."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate required columns
+            required_columns = ['firstname', 'lastname', 'othername', 'email', 'picture', 'registration_number', 'parent_name']
+            if not all(col in data.columns for col in required_columns):
+                return Response({"error": f"Missing required columns: {required_columns}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            created = []
+            errors = []
+
+            for _, row in data.iterrows():
+                try:
+                    # Create or get student
+                    student_data = {
+                        "firstname": row['firstname'],
+                        "lastname": row['lastname'],
+                        "othername": row.get('othername', ""),
+                        "email": row.get('email', None),
+                        "picture": row.get('picture', None),
+                        "registration_number": row['registration_number'],
+                        "parent_name": row.get('parent_name', None)
+                    }
+                    student, _ = Student.objects.get_or_create(
+                        registration_number=row['registration_number'], defaults=student_data
+                    )
+
+                    # Create enrollment
+                    enrollment_data = {
+                        "student": student.id,
+                        "student_class": class_id,
+                        "term": term_id,
+                        "session": session_id
+                    }
+                    enrollment_serializer = EnrollmentSerializer(data=enrollment_data)
+                    enrollment_serializer.is_valid(raise_exception=True)
+                    enrollment_serializer.save()
+
+                    created.append(student.registration_number)
+                except Exception as e:
+                    errors.append({"registration_number": row['registration_number'], "error": str(e)})
+
+            return Response({
+                "successfully_enrolled": created,
+                "errors": errors
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -374,24 +480,24 @@ def student_detail(request, student_id):
         return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
     
     # Get most recent enrollment
-    enrollment = Enrollment.objects.filter(student=student).order_by('-enrollment_date').first()
+    Enrollment.objects.filter(student=student).order_by('-enrollment_date').first()
     
     # Serialize student data
     student_data = StudentSerializer(student).data
     
     # Add enrollment information if available
-    if enrollment:
+    if Enrollment:
         student_data['class'] = {
-            'id': enrollment.student_class.id,
-            'name': enrollment.student_class.name,
+            'id': Enrollment.student_class.id,
+            'name': Enrollment.student_class.name,
         }
         student_data['term'] = {
-            'id': enrollment.term.id,
-            'name': enrollment.term.name,
+            'id': Enrollment.term.id,
+            'name': Enrollment.term.name,
         }
         student_data['session'] = {
-            'id': enrollment.session.id,
-            'name': enrollment.session.name,
+            'id': Enrollment.session.id,
+            'name': Enrollment.session.name,
         }
     
     return Response(student_data, status=status.HTTP_200_OK)
@@ -529,3 +635,168 @@ def class_rankings(request, class_id, term_id):
     
     serializer = ResultSummarySerializer(summaries, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def classes_by_term(request, term_id):
+    try:
+        term = Term.objects.get(id=term_id)
+        classes = Class.objects.filter(term=term)
+        serializer = ClassSerializer(classes, many=True)
+        return Response(serializer.data)
+    except Term.DoesNotExist:
+        return Response({"error": "Term not found"}, status=404)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def subject_student_scores(request, subject_id):
+    try:
+        # Fetch the subject and retrieve associated class and term
+        subject = get_object_or_404(Subject, id=subject_id)
+        student_class = subject.class_group
+        # Fetch the term through the class_group relationship
+        term = subject.class_group.term
+
+        if request.method == 'GET':
+            # Fetch students in the class
+            enrollments = Enrollment.objects.filter(student_class=student_class, term=term)
+            students = [enrollment.student for enrollment in enrollments]
+
+            # Fetch scores for the subject and term
+            scores = Score.objects.filter(subject=subject, term=term, student__in=students)
+
+            # Map students to their scores
+            student_scores = []
+            for student in students:
+                score = scores.filter(student=student).first()
+                student_scores.append({
+                    'student_id': student.id,
+                    'student_name': f"{student.firstname} {student.lastname}",
+                    'ca_score': score.ca_score if score else 0,
+                    'exam_score': score.exam_score if score else 0,
+                    'total_score': (score.ca_score + score.exam_score) if score else 0,
+                    'has_existing_score': bool(score)
+                })
+
+            return Response(student_scores, status=200)
+
+        elif request.method == 'POST':
+            # Update or create scores for students
+            scores_data = request.data.get('scores', [])
+            for score_data in scores_data:
+                student_id = score_data.get('student_id')
+                ca_score = score_data.get('ca_score', 0)
+                exam_score = score_data.get('exam_score', 0)
+
+                student = get_object_or_404(Student, id=student_id)
+
+                Score.objects.update_or_create(
+                    student=student,
+                    subject=subject,
+                    term=term,
+                    defaults={
+                        'ca_score': ca_score,
+                        'exam_score': exam_score
+                    }
+                )
+
+            return Response({'message': 'Scores updated successfully'}, status=200)
+
+    except Exception as e:
+        logger.error(f"Error in subject_student_scores: {str(e)}")
+        return Response({'error': str(e)}, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_school_details(request):
+    try:
+        school = School.objects.first()
+        if not school:
+            return Response({"error": "School details not found."}, status=404)
+
+        return Response({
+            "name": school.name,
+            "logo": school.logo.url if school.logo else ""
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def promote_or_demote_students(request):
+    """
+    Promote or demote students by updating their enrollment records.
+    Payload example:
+    {
+        "students": [
+            {
+                "student_id": 1,
+                "new_class_id": 2,
+                "new_session_id": 3
+            },
+            {
+                "student_id": 2,
+                "new_class_id": 1,
+                "new_session_id": 3
+            }
+        ]
+    }
+    """
+    logger.info("Received request to promote or demote students.")
+    logger.debug(f"Request data: {request.data}")
+
+    students_data = request.data.get("students", [])
+
+    if not students_data:
+        logger.warning("No students data provided in the request.")
+        return Response({"error": "No students data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+    updated_students = []
+    errors = []
+
+    for student_data in students_data:
+        student_id = student_data.get("student_id")
+        new_class_id = student_data.get("new_class_id")
+        new_session_id = student_data.get("new_session_id")
+
+        logger.debug(f"Processing student_id: {student_id}, new_class_id: {new_class_id}, new_session_id: {new_session_id}")
+
+        if not (student_id and new_class_id and new_session_id):
+            logger.error(f"Missing required fields for student_id: {student_id}")
+            errors.append({"student_id": student_id, "error": "Missing required fields."})
+            continue
+
+        try:
+            # Check if an enrollment with the new class and session already exists
+            existing_enrollment = Enrollment.objects.filter(
+                student_id=student_id,
+                student_class_id=new_class_id,
+                session_id=new_session_id
+            ).exists()
+
+            if existing_enrollment:
+                logger.warning(f"Enrollment already exists for student_id: {student_id} in class_id: {new_class_id} and session_id: {new_session_id}")
+                errors.append({"student_id": student_id, "error": "Enrollment already exists."})
+                continue
+
+            # Update the existing enrollment
+            enrollment = Enrollment.objects.filter(student_id=student_id).latest('id')
+            enrollment.student_class_id = new_class_id
+            enrollment.session_id = new_session_id
+            enrollment.save()
+            updated_students.append(student_id)
+            logger.info(f"Successfully updated enrollment for student_id: {student_id}")
+        except Enrollment.DoesNotExist:
+            logger.error(f"Enrollment not found for student_id: {student_id}")
+            errors.append({"student_id": student_id, "error": "Enrollment not found."})
+        except Exception as e:
+            logger.exception(f"Error updating enrollment for student_id: {student_id}")
+            errors.append({"student_id": student_id, "error": str(e)})
+
+    logger.info("Finished processing promote or demote request.")
+    logger.debug(f"Updated students: {updated_students}, Errors: {errors}")
+
+    return Response({
+        "updated_students": updated_students,
+        "errors": errors
+    }, status=status.HTTP_200_OK)

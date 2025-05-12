@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Sidebar from '../components/Sidebar';
 
 export default function SchoolSettings() {
   const [schoolData, setSchoolData] = useState({
@@ -128,178 +129,177 @@ export default function SchoolSettings() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <ToastContainer />
-      <h2 className="text-2xl font-bold mb-6 text-center md:text-left">School Settings</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Basic Information */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">School Name</label>
-              <input
-                type="text"
-                name="name"
-                value={schoolData.name}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
-              <input
-                type="tel"
-                name="phone"
-                value={schoolData.phone}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={schoolData.email || ''}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Website</label>
-              <input
-                type="url"
-                name="website"
-                value={schoolData.website || ''}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Address</label>
-              <textarea
-                name="address"
-                value={schoolData.address}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                rows="3"
-                required
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">School Motto</label>
-              <input
-                type="text"
-                name="motto"
-                value={schoolData.motto || ''}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Principal Information */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Principal Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Principal's Name</label>
-              <input
-                type="text"
-                name="principal_name"
-                value={schoolData.principal_name}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Images and Signatures */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Logo and Signatures</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* School Logo */}
-            <div>
-              <label className="block text-sm font-medium mb-1">School Logo</label>
-              <div className="border rounded p-4">
-                {previewUrls.logo && (
-                  <img
-                    src={previewUrls.logo}
-                    alt="School Logo"
-                    className="w-32 h-32 object-contain mx-auto mb-2"
+    <div className="flex flex-col md:flex-row">
+      <Sidebar className="hidden md:block fixed top-0 left-0 h-full w-64" />
+      <main className="flex-1 p-4 md:ml-64">
+        <div className="p-6 max-w-7xl mx-auto">
+          <ToastContainer />
+          <h2 className="text-2xl font-bold mb-6 text-center md:text-left">School Settings</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Basic Information */}
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+              <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">School Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={schoolData.name}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                    required
                   />
-                )}
-                <input
-                  type="file"
-                  name="logo"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full"
-                />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={schoolData.phone}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={schoolData.email || ''}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={schoolData.website || ''}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Address</label>
+                  <textarea
+                    name="address"
+                    value={schoolData.address}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                    rows="3"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">School Motto</label>
+                  <input
+                    type="text"
+                    name="motto"
+                    value={schoolData.motto || ''}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
               </div>
             </div>
-
-            {/* Principal's Signature */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Principal's Signature</label>
-              <div className="border rounded p-4">
-                {previewUrls.principal_signature && (
-                  <img
-                    src={previewUrls.principal_signature}
-                    alt="Principal's Signature"
-                    className="w-32 h-32 object-contain mx-auto mb-2"
+            {/* Principal Information */}
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+              <h3 className="text-lg font-semibold mb-4">Principal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Principal's Name</label>
+                  <input
+                    type="text"
+                    name="principal_name"
+                    value={schoolData.principal_name}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-3 py-2"
+                    required
                   />
-                )}
-                <input
-                  type="file"
-                  name="principal_signature"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full"
-                />
+                </div>
               </div>
             </div>
-
-            {/* School Stamp */}
-            <div>
-              <label className="block text-sm font-medium mb-1">School Stamp</label>
-              <div className="border rounded p-4">
-                {previewUrls.school_stamp && (
-                  <img
-                    src={previewUrls.school_stamp}
-                    alt="School Stamp"
-                    className="w-32 h-32 object-contain mx-auto mb-2"
-                  />
-                )}
-                <input
-                  type="file"
-                  name="school_stamp"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full"
-                />
+            {/* Images and Signatures */}
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+              <h3 className="text-lg font-semibold mb-4">Logo and Signatures</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* School Logo */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">School Logo</label>
+                  <div className="border rounded p-4">
+                    {previewUrls.logo && (
+                      <img
+                        src={previewUrls.logo}
+                        alt="School Logo"
+                        className="w-32 h-32 object-contain mx-auto mb-2"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      name="logo"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                {/* Principal's Signature */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Principal's Signature</label>
+                  <div className="border rounded p-4">
+                    {previewUrls.principal_signature && (
+                      <img
+                        src={previewUrls.principal_signature}
+                        alt="Principal's Signature"
+                        className="w-32 h-32 object-contain mx-auto mb-2"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      name="principal_signature"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                {/* School Stamp */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">School Stamp</label>
+                  <div className="border rounded p-4">
+                    {previewUrls.school_stamp && (
+                      <img
+                        src={previewUrls.school_stamp}
+                        alt="School Stamp"
+                        className="w-32 h-32 object-contain mx-auto mb-2"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      name="school_stamp"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </form>
+      </main>
     </div>
   )
 }

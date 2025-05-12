@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
+import Sidebar from '../components/Sidebar';
 
 export default function Classes() {
   const [classes, setClasses] = useState([])
@@ -149,99 +150,104 @@ export default function Classes() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Manage Classes</h2>
+    <div className="flex flex-col md:flex-row">
+      <Sidebar className="hidden md:block fixed top-0 left-0 h-full w-64" />
+      <main className="flex-1 p-4 md:ml-64">
+        <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
+          <ToastContainer />
+          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Manage Classes</h2>
 
-      {/* Add New Class */}
-      <form onSubmit={handleSubmit} className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <input
-          type="text"
-          value={name}
-          placeholder="Enter class name"
-          onChange={(e) => setName(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded w-64"
-          required
-        />
-        <select
-          value={termId}
-          onChange={(e) => setTermId(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded w-64"
-          required
-        >
-          <option value="">Select Term</option>
-          {terms.map(term => (
-            <option key={term.id} value={term.id}>
-              {term.name} ({term.session_name || 'No session'})
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          disabled={loading}
-        >
-          {loading ? 'Adding...' : 'Add Class'}
-        </button>
-      </form>
+          {/* Add New Class */}
+          <form onSubmit={handleSubmit} className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white p-6 rounded shadow-md">
+            <input
+              type="text"
+              value={name}
+              placeholder="Enter class name"
+              onChange={(e) => setName(e.target.value)}
+              className="border border-gray-300 px-4 py-2 rounded w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            />
+            <select
+              value={termId}
+              onChange={(e) => setTermId(e.target.value)}
+              className="border border-gray-300 px-4 py-2 rounded w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            >
+              <option value="">Select Term</option>
+              {terms.map(term => (
+                <option key={term.id} value={term.id}>
+                  {term.name} ({term.session_name || 'No session'})
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+              disabled={loading}
+            >
+              {loading ? 'Adding...' : 'Add Class'}
+            </button>
+          </form>
 
-      {/* Class List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {classes.map(cls => (
-          <div key={cls.id} className="border rounded p-4 bg-white shadow-md">
-            <div>
-              <span className="font-semibold">{cls.name}</span>{' '}
-              <span className="text-sm text-gray-500">({cls.term_name || 'Unknown Term'})</span>
-            </div>
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => openEditModal(cls)}
-                className="text-blue-600 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(cls.id)}
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
+          {/* Class List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {classes.map(cls => (
+              <div key={cls.id} className="border rounded p-6 bg-white shadow-md hover:shadow-lg transition-shadow">
+                <div>
+                  <span className="font-semibold text-lg text-gray-800">{cls.name}</span>{' '}
+                  <span className="text-sm text-gray-500">({cls.term_name || 'Unknown Term'})</span>
+                </div>
+                <div className="flex gap-4 mt-4">
+                  <button
+                    onClick={() => openEditModal(cls)}
+                    className="text-blue-600 hover:underline focus:outline-none"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cls.id)}
+                    className="text-red-600 hover:underline focus:outline-none"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Edit Modal */}
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Edit Class"
-      >
-        <input
-          type="text"
-          value={editingName}
-          onChange={(e) => setEditingName(e.target.value)}
-          className="border px-4 py-2 w-full rounded mb-4"
-        />
-        <select
-          value={editingTermId}
-          onChange={(e) => setEditingTermId(e.target.value)}
-          className="border px-4 py-2 w-full rounded mb-4"
-        >
-          <option value="">Select Term</option>
-          {terms.map(term => (
-            <option key={term.id} value={term.id}>
-              {term.name} ({term.session_name || 'No session'})
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleUpdate}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-        >
-          Save Changes
-        </button>
-      </Modal>
+          {/* Edit Modal */}
+          <Modal
+            isOpen={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            title="Edit Class"
+          >
+            <input
+              type="text"
+              value={editingName}
+              onChange={(e) => setEditingName(e.target.value)}
+              className="border px-4 py-2 w-full rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <select
+              value={editingTermId}
+              onChange={(e) => setEditingTermId(e.target.value)}
+              className="border px-4 py-2 w-full rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="">Select Term</option>
+              {terms.map(term => (
+                <option key={term.id} value={term.id}>
+                  {term.name} ({term.session_name || 'No session'})
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleUpdate}
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              Save Changes
+            </button>
+          </Modal>
+        </div>
+      </main>
     </div>
   )
 }

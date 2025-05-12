@@ -5,6 +5,7 @@ import axiosInstance from '../api/axiosInstance'; // Import the configured insta
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from '../components/Modal'
+import Sidebar from '../components/Sidebar'; // Added missing import for Sidebar
 
 export default function Terms() {
   const [terms, setTerms] = useState([])
@@ -150,93 +151,98 @@ export default function Terms() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Manage Terms</h2>
+    <div className="flex flex-col md:flex-row">
+      <Sidebar className="hidden md:block fixed top-0 left-0 h-full w-64" />
+      <main className="flex-1 p-4 md:ml-64">
+        <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
+          <ToastContainer />
+          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Manage Terms</h2>
 
-      <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap gap-4 items-center">
-        <input
-          type="text"
-          value={name}
-          placeholder="Enter term name"
-          onChange={(e) => setName(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded w-64"
-          required
-        />
-        <select
-          value={sessionId}
-          onChange={(e) => setSessionId(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded w-64"
-          required
-        >
-          <option value="">Select session</option>
-          {sessions.map((session) => (
-            <option key={session.id} value={session.id}>
-              {session.name}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          disabled={loading}
-        >
-          {loading ? 'Adding...' : 'Add Term'}
-        </button>
-      </form>
+          <form onSubmit={handleSubmit} className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white p-6 rounded shadow-md">
+            <input
+              type="text"
+              value={name}
+              placeholder="Enter term name"
+              onChange={(e) => setName(e.target.value)}
+              className="border border-gray-300 px-4 py-2 rounded w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            />
+            <select
+              value={sessionId}
+              onChange={(e) => setSessionId(e.target.value)}
+              className="border border-gray-300 px-4 py-2 rounded w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            >
+              <option value="">Select session</option>
+              {sessions.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+              disabled={loading}
+            >
+              {loading ? 'Adding...' : 'Add Term'}
+            </button>
+          </form>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {terms.map((term) => (
-          <div key={term.id} className="border rounded p-4 bg-white shadow-md">
-            <h2 className="text-lg font-semibold">{term.name}</h2>
-            <p className="text-gray-600">Session: {sessions.find((s) => s.id === term.session)?.name || 'Unknown'}</p>
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => openEditModal(term)}
-                className="text-blue-600 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(term.id)}
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {terms.map((term) => (
+              <div key={term.id} className="border rounded p-6 bg-white shadow-md hover:shadow-lg transition-shadow">
+                <h2 className="text-lg font-semibold text-gray-800">{term.name}</h2>
+                <p className="text-gray-600">Session: {sessions.find((s) => s.id === term.session)?.name || 'Unknown'}</p>
+                <div className="flex gap-4 mt-4">
+                  <button
+                    onClick={() => openEditModal(term)}
+                    className="text-blue-600 hover:underline focus:outline-none"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(term.id)}
+                    className="text-red-600 hover:underline focus:outline-none"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Edit Term"
-      >
-        <input
-          type="text"
-          value={editingName}
-          onChange={(e) => setEditingName(e.target.value)}
-          className="border px-4 py-2 w-full rounded mb-4"
-        />
-        <select
-          value={editingSessionId}
-          onChange={(e) => setEditingSessionId(e.target.value)}
-          className="border px-4 py-2 w-full rounded mb-4"
-        >
-          {sessions.map((session) => (
-            <option key={session.id} value={session.id}>
-              {session.name}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleUpdate}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-        >
-          Save Changes
-        </button>
-      </Modal>
+          <Modal
+            isOpen={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            title="Edit Term"
+          >
+            <input
+              type="text"
+              value={editingName}
+              onChange={(e) => setEditingName(e.target.value)}
+              className="border px-4 py-2 w-full rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <select
+              value={editingSessionId}
+              onChange={(e) => setEditingSessionId(e.target.value)}
+              className="border px-4 py-2 w-full rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {sessions.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleUpdate}
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              Save Changes
+            </button>
+          </Modal>
+        </div>
+      </main>
     </div>
   )
 }

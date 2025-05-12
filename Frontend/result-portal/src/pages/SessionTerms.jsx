@@ -1,10 +1,12 @@
 // src/pages/TermsBySession.jsx
 import { useEffect, useState } from 'react';
 import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import Modal from '../components/Modal'
 import React from 'react';
+import Header from '../components/Header';
+import Navbar from '../components/Navbar';
 
 export default function SessionTerms() {
   const { sessionId } = useParams()
@@ -12,7 +14,9 @@ export default function SessionTerms() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedTerm, setSelectedTerm] = useState(null)
   const [editName, setEditName] = useState('')
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [schoolDetails, setSchoolDetails] = useState({ name: '', logo: '' });
   // Ensure all API calls include the Authorization header with the token
   const token = localStorage.getItem('accessToken');
   if (!token) {
@@ -30,77 +34,49 @@ export default function SessionTerms() {
       console.log('Error fetching terms:', err)
     }
   }
+  
+  const fetchSchoolDetails = async () => {
+    try {
+      const res = await axiosInstance.get('/schools/details/', { headers });
+      setSchoolDetails(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch school details');
+      console.log('Error fetching school details:', err);
+    }
+  };
 
   useEffect(() => {
+    fetchSchoolDetails();
     fetchTerms()
   }, [sessionId])
-
-  const openEditModal = (term) => {
-    setSelectedTerm(term)
-    setEditName(term.name)
-    setEditModalOpen(true)
-  }
-
-  const handleEditSubmit = async () => {
-    try {
-      // Use axiosInstance and relative path
-      await axiosInstance.put(`/terms/${selectedTerm.id}/`, { name: editName, session: sessionId }, { headers });
-      toast.success('Term updated!');
-      setEditModalOpen(false);
-      fetchTerms()
-    } catch (err){
-      toast.error('Failed to update term')
-      console.log('Error updating term:', err)
-    }
-  }
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this term?')) return;
-    try {
-      // Use axiosInstance and relative path
-      await axiosInstance.delete(`/terms/${id}/`, { headers });
-      toast.success('Term deleted!');
-      fetchTerms();
-    } catch (err){
-      toast.error('Failed to delete term')
-      console.log('Error deleting term:', err)
-    }
-  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer />
+      
+       {/* Navbar */}
+      <Navbar />
+        {/* Header Section */}
+      <Header />
+    
+      {/* Main Content */}
+      <button onClick={() => navigate(-1)} className="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+        Back
+      </button>
       <h1 className="text-2xl font-bold mb-6 text-center md:text-left">Session Terms</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {terms.map((term) => (
-          <div key={term.id} className="border rounded p-4 bg-white shadow-md">
-            <h2 className="text-lg font-semibold">{term.name}</h2>
-            <div className="space-x-2">
-              <button onClick={() => openEditModal(term)} className="text-sm text-blue-600">Edit</button>
-              <button onClick={() => handleDelete(term.id)} className="text-sm text-red-600">Delete</button>
+      <main className="flex-1 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {terms.map((term) => (
+            <div key={term.id} className="border rounded p-4 bg-white shadow-md">
+              <h2 className="text-lg font-semibold">
+                <Link to={`/terms/${term.id}/classes`} className="text-blue-600 hover:underline">
+                  {term.name}
+                </Link>
+              </h2>            
             </div>
-          </div>
-        ))}
-      </div>
-
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Edit Term"
-      >
-        <input
-          type="text"
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-          className="border px-4 py-2 w-full rounded mb-4"
-        />
-        <button
-          onClick={handleEditSubmit}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-        >
-          Save Changes
-        </button>
-      </Modal>
+          ))}
+        </div>
+      </main>
     </div>
   )
 }

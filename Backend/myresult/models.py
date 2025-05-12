@@ -47,15 +47,14 @@ class Student(models.Model):
     lastname = models.CharField(max_length=50)
     firstname = models.CharField(max_length=50)
     othername = models.CharField(max_length=50, blank=True, null=True)
-    email = models.EmailField(unique=True)
-    picture = models.ImageField(upload_to=student_picture_path, blank=True, null=True,
-                              help_text="Upload student's passport photograph")
+    email = models.EmailField(unique=True, null=True, blank=True)
+    picture = models.ImageField(upload_to=student_picture_path, blank=True, null=True, help_text="Upload student's passport photograph")
     registration_number = models.CharField(max_length=20, unique=True, null=True)
     days_present = models.IntegerField(default=0)
     school_days = models.IntegerField(default=0)
     last_term_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
-    parent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='children')  # Updated reference
+    parent_name = models.CharField(max_length=100, blank=True, null=True, help_text="Parent's full name")
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"

@@ -52,10 +52,11 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     current_class = serializers.SerializerMethodField()
+    parent_name = serializers.CharField(required=False, allow_null=True)
     
     class Meta:
         model = Student
-        fields = ['id', 'firstname', 'lastname', 'othername', 'email', 'picture', 'current_class', 'registration_number', 'days_present',]
+        fields = ['id', 'firstname', 'lastname', 'othername', 'email', 'picture', 'current_class', 'registration_number', 'days_present', 'parent_name']
     
     def get_current_class(self, obj):
         # Get the most recent enrollment for this student

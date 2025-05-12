@@ -12,7 +12,7 @@ export default function Topbar() {
   };
 
   return (
-    <div className="bg-white shadow px-6 py-4 sticky top-0 z-10 flex justify-between items-center">
+    <div className="bg-white shadow px-6 py-4 sticky top-0 z-20 flex justify-between items-center print:hidden">
       <h1 className="text-xl font-semibold text-gray-800">School Result Portal</h1>
       <div className="flex items-center gap-4">
         {user && (

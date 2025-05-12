@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContextDef';
+import { useNavigate } from 'react-router-dom';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, ''); // Ensure no trailing slash
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -23,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post('http://localhost:8000/api/auth/token/', {
+    const response = await axios.post(`${BASE_URL}/auth/token/`, { // Added trailing slash
       email,
       password
     });
@@ -33,10 +37,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('refreshToken', refresh);
     axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
     
-    const userResponse = await axios.get('http://localhost:8000/api/auth/users/me/');
-    localStorage.setItem('user', JSON.stringify(userResponse.data));
-    setUser(userResponse.data);
-    return userResponse.data;
+    const userResponse = await axios.get(`${BASE_URL}/auth/users/me`); // Removed trailing slash
+    const userData = userResponse.data;
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+
+    // Use a timeout to ensure the user state is updated before navigating
+    setTimeout(() => {
+      if (userData.role === 'TEACHER') {
+        navigate('/teacher-home');
+      } else {
+        navigate('/');
+      }
+    }, 0);
+
+    return userData;
   };
 
   const logout = () => {
@@ -50,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const refreshToken = async () => {
     try {
       const refresh = localStorage.getItem('refreshToken');
-      const response = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
+      const response = await axios.post(`${BASE_URL}/auth/token/refresh`, { // Removed trailing slash
         refresh
       });
       const { access } = response.data;

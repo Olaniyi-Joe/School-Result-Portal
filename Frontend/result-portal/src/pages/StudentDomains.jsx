@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Sidebar from '../components/Sidebar';
 
 const RATING_OPTIONS = ['A', 'B', 'C', 'D', 'E']
  
@@ -287,81 +288,84 @@ export default function StudentDomains() {
   )
 
   return (
-    <div className="p-4">
-      <ToastContainer />
-      <h2 className="text-xl font-bold mb-4">Student Domain Assessments</h2>
+    <div className="flex flex-col md:flex-row">
+      <Sidebar className="hidden md:block fixed top-0 left-0 h-full w-64" />
+      <main className="flex-1 p-4 md:ml-64">
+        <ToastContainer />
+        <h2 className="text-xl font-bold mb-4">Student Domain Assessments</h2>
 
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <select
-          value={selectedStudent}
-          onChange={(e) => setSelectedStudent(e.target.value)}
-          className="border px-4 py-2 rounded"
-        >
-          <option value="">Select Student</option>
-          {students.map(student => (
-            <option key={student.id} value={student.id}>
-              {student.firstname} {student.lastname}
-            </option>
-          ))}
-        </select>
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <select
+            value={selectedStudent}
+            onChange={(e) => setSelectedStudent(e.target.value)}
+            className="border px-4 py-2 rounded"
+          >
+            <option value="">Select Student</option>
+            {students.map(student => (
+              <option key={student.id} value={student.id}>
+                {student.firstname} {student.lastname}
+              </option>
+            ))}
+          </select>
 
-        <select
-          value={selectedTerm}
-          onChange={(e) => setSelectedTerm(e.target.value)}
-          className="border px-4 py-2 rounded"
-        >
-          <option value="">Select Term</option>
-          {terms.map(term => (
-            <option key={term.id} value={term.id}>{term.name}</option>
-          ))}
-        </select>
+          <select
+            value={selectedTerm}
+            onChange={(e) => setSelectedTerm(e.target.value)}
+            className="border px-4 py-2 rounded"
+          >
+            <option value="">Select Term</option>
+            {terms.map(term => (
+              <option key={term.id} value={term.id}>{term.name}</option>
+            ))}
+          </select>
 
-        <button
-          onClick={fetchExistingData}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          disabled={loading || !selectedStudent || !selectedTerm}
-        >
-          {loading ? 'Loading...' : 'Load Assessments'}
-        </button>
-      </div>
+          <button
+            onClick={fetchExistingData}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            disabled={loading || !selectedStudent || !selectedTerm}
+          >
+            {loading ? 'Loading...' : 'Load Assessments'}
+          </button>
+        </div>
 
-      {(Object.keys(effectiveDomain).length > 0 || Object.keys(psychomotorDomain).length > 0) && (
-        <form onSubmit={handleSubmit} className="max-w-[1400px] mx-auto">
-          <RatingScale />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-4 rounded">
-              <DomainSection
-                title="Effective Domain Assessment"
-                fields={EFFECTIVE_DOMAIN_FIELDS}
-                domain="effective"
-                data={effectiveDomain}
-                onRatingChange={handleRatingChange}
-              />
+        {(Object.keys(effectiveDomain).length > 0 || Object.keys(psychomotorDomain).length > 0) && (
+          <form onSubmit={handleSubmit} className="max-w-[1400px] mx-auto">
+            <RatingScale />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gray-50 p-4 rounded">
+                <DomainSection
+                  title="Effective Domain Assessment"
+                  fields={EFFECTIVE_DOMAIN_FIELDS}
+                  domain="effective"
+                  data={effectiveDomain}
+                  onRatingChange={handleRatingChange}
+                />
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded">
+                <DomainSection
+                  title="Psychomotor Domain Assessment"
+                  fields={PSYCHOMOTOR_DOMAIN_FIELDS}
+                  domain="psychomotor"
+                  data={psychomotorDomain}
+                  onRatingChange={handleRatingChange}
+                />
+              </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded">
-              <DomainSection
-                title="Psychomotor Domain Assessment"
-                fields={PSYCHOMOTOR_DOMAIN_FIELDS}
-                domain="psychomotor"
-                data={psychomotorDomain}
-                onRatingChange={handleRatingChange}
-              />
+            <div className="flex justify-end mt-4">
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+                disabled={submitting}
+              >
+                {submitting ? 'Saving...' : 'Save All Assessments'}
+              </button>
             </div>
-          </div>
-
-          <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-              disabled={submitting}
-            >
-              {submitting ? 'Saving...' : 'Save All Assessments'}
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
+      </main>
     </div>
   )
 }
