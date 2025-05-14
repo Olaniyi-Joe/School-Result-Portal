@@ -13,6 +13,7 @@ export default function Sidebar() {
     { to: '/classes', label: 'Classes', icon: 'graduation-cap' },
     { to: '/subjects', label: 'Subjects', icon: 'book' },
     { to: '/enroll-students', label: 'Enroll Students', icon: 'user-plus' },
+    { to: '/students', label: 'Students', icon: 'users' },
     { to: '/enter-scores', label: 'Enter Scores', icon: 'edit' },
     { to: '/student-scores', label: 'View Scores', icon: 'chart-bar' },
     { to: '/student-results', label: 'Student Results', icon: 'file-alt' },

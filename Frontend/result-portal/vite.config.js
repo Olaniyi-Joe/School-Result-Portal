@@ -8,9 +8,10 @@ export default defineConfig({
     react(), 
     tailwindcss(),
   ], 
-  server: {
-    host: true, // Allow access from network
-    port: 5173, // or any port you prefer
-  },
+  base: '/static/',
+ // server: {
+   // host: true, // Allow access from network
+   // port: 5173, // or any port you prefer
+ // },
 })
 

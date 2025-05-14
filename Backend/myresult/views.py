@@ -537,7 +537,7 @@ class PsychomotiveDomainViewSet(viewsets.ModelViewSet):
         return queryset
 
 class SchoolViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsSuperAdmin]
+    permission_classes = [IsAuthenticated]
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 

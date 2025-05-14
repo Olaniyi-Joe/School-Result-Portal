@@ -28,6 +28,7 @@ import TeacherHome from './pages/TeacherHome';
 import TeacherResults from './pages/TeacherResults'
 import TeacherStudentList from './pages/TeacherStudentList';
 import PromotionDemotion from './pages/PromotionDemotion';
+import Students from './pages/Students'; // Import Students page
 import { match } from 'path-to-regexp';
 
 const ProtectedRoute = ({ children }) => {
@@ -111,6 +112,7 @@ export default function App() {
                     <Route path="/school-settings" element={<SchoolSettings />} />
                     <Route path="/comments" element={<CommentsManagement />} />
                     <Route path="/promotion-demotion" element={<PromotionDemotion />} />
+                    <Route path="/students" element={<Students />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/student-list" element={<Navigate to="/teacher-student-list" replace />} />
                     <Route path="*" element={<Navigate to="/" />} />
